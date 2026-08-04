@@ -1,0 +1,55 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutGrid, Users, FileText, Package } from "lucide-react";
+
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+  { href: "/clientes", label: "Clientes", icon: Users },
+];
+
+const NAV_PRONTO = [
+  { label: "Cotizaciones", icon: FileText },
+  { label: "Pedidos", icon: Package },
+];
+
+export function SidebarNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="flex flex-1 flex-col gap-0.5 p-2.5">
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        const active = pathname === href || pathname.startsWith(`${href}/`);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              active
+                ? "bg-[#1A1A1A] text-primary"
+                : "text-[#666] hover:text-foreground"
+            }`}
+          >
+            <Icon className="size-4" />
+            {label}
+          </Link>
+        );
+      })}
+
+      {NAV_PRONTO.map(({ label, icon: Icon }) => (
+        <div
+          key={label}
+          title="Todavía no disponible"
+          className="flex cursor-default items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-[#3a3a3a]"
+        >
+          <Icon className="size-4" />
+          <span className="flex-1">{label}</span>
+          <span className="rounded-full bg-[#1A1A1A] px-1.5 py-0.5 text-[9px] tracking-wide text-[#555] uppercase">
+            Pronto
+          </span>
+        </div>
+      ))}
+    </nav>
+  );
+}

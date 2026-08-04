@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0A0A0A; font-family: 'Outfit', sans-serif; color: #F0F0F0; overflow: hidden; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+    a, a:hover { color: inherit; text-decoration: none; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  </style>
+</helmet>
+
+<div style="display: flex; height: 100vh; width: 100vw; background: #0A0A0A; overflow: hidden;">
+
+  <!-- SIDEBAR -->
+  <div style="width: 220px; min-width: 220px; background: #0F0F0F; border-right: 1px solid #1A1A1A; display: flex; flex-direction: column; padding: 0;">
+    <!-- Logo -->
+    <div style="padding: 24px 20px 20px; border-bottom: 1px solid #1A1A1A;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; background: #FFDD00; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 14L9 4L15 14H3Z" fill="#0A0A0A"/></svg>
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; letter-spacing: -0.3px; color: #fff;">PasoCRM</div>
+          <div style="font-size: 10px; color: #444; letter-spacing: 0.5px; text-transform: uppercase;">Dormiluna</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav style="flex: 1; padding: 16px 10px; display: flex; flex-direction: column; gap: 2px;">
+      <div onClick="{{ navDashboard }}" style="{{ navDashboardStyle }}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+        Dashboard
+      </div>
+      <div onClick="{{ navClientes }}" style="{{ navClientesStyle }}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" fill="currentColor"/><circle cx="12" cy="5" r="2" fill="currentColor" opacity=".5"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M12 8c1.66 0 3 1.34 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".5"/></svg>
+        Clientes
+      </div>
+      <div onClick="{{ navCotizaciones }}" style="{{ navCotizacionesStyle }}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Cotizaciones
+      </div>
+      <div onClick="{{ navPedidos }}" style="{{ navPedidosStyle }}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12l-1.5 8H3.5L2 3Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="6" cy="14" r="1" fill="currentColor"/><circle cx="11" cy="14" r="1" fill="currentColor"/><path d="M1 1h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Pedidos
+      </div>
+
+      <div style="margin-top: 16px; padding: 0 8px;">
+        <div style="font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Hoy</div>
+      </div>
+      <div style="padding: 10px 12px; border-radius: 8px; background: #1A1A1A; display: flex; align-items: center; gap: 8px; cursor: default;">
+        <div style="width: 6px; height: 6px; background: #CCFF00; border-radius: 50%; animation: pulse-dot 2s infinite;"></div>
+        <div>
+          <div style="font-size: 11px; color: #888;">Pendientes hoy</div>
+          <div style="font-size: 18px; font-weight: 700; color: #FFDD00; line-height: 1;">{{ pendientesHoy }}</div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- User -->
+    <div style="padding: 16px 20px; border-top: 1px solid #1A1A1A; display: flex; align-items: center; gap: 10px;">
+      <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #FFDD00, #CCFF00); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #0A0A0A; flex-shrink: 0;">E</div>
+      <div>
+        <div style="font-size: 13px; font-weight: 600; color: #F0F0F0;">Edwin</div>
+        <div style="font-size: 11px; color: #444;">Vendedor</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+
+    <!-- DASHBOARD VIEW -->
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="flex: 1; overflow-y: auto; padding: 32px 36px; animation: fadeUp 0.3s ease;">
+        <!-- Header -->
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px;">
+          <div>
+            <div style="font-size: 11px; color: #444; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;">Lunes 4 de agosto, 2026</div>
+            <h1 style="font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.5px;">Buenos días, Edwin 👋</h1>
+            <p style="font-size: 14px; color: #555; margin-top: 4px;">Tienes <span style="color: #FFDD00; font-weight: 600;">{{ pendientesHoy }}</span> seguimientos pendientes para hoy.</p>
+          </div>
+          <button onClick="{{ addCliente }}" style="display: flex; align-items: center; gap: 8px; background: #FFDD00; color: #0A0A0A; border: none; padding: 10px 18px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Nuevo cliente
+          </button>
+        </div>
+
+        <!-- KPIs -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+          <sc-for list="{{ kpis }}" as="kpi" hint-placeholder-count="4">
+            <div style="background: #111; border: 1px solid #1E1E1E; border-radius: 14px; padding: 20px; position: relative; overflow: hidden;">
+              <div style="font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">{{ kpi.label }}</div>
+              <div style="font-size: 32px; font-weight: 800; color: {{ kpi.color }}; letter-spacing: -1px; line-height: 1;">{{ kpi.value }}</div>
+              <div style="font-size: 12px; color: #444; margin-top: 6px;">{{ kpi.sub }}</div>
+              <div style="position: absolute; right: 16px; top: 16px; opacity: 0.07; font-size: 40px; font-weight: 800;">{{ kpi.icon }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Hoy toca -->
+        <div style="display: grid; grid-template-columns: 1fr 360px; gap: 24px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+              <div style="width: 8px; height: 8px; background: #FFDD00; border-radius: 50%;"></div>
+              <h2 style="font-size: 14px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px;">Hoy toca</h2>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <sc-for list="{{ tareasHoy }}" as="tarea" hint-placeholder-count="4">
+                <div onClick="{{ tarea.onClick }}" style="background: #111; border: 1px solid #1E1E1E; border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: border-color 0.15s;" style-hover="border-color: #FFDD00;">
+                  <div style="width: 40px; height: 40px; background: {{ tarea.avatarBg }}; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #0A0A0A; flex-shrink: 0;">{{ tarea.inicial }}</div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 14px; color: #F0F0F0;">{{ tarea.nombre }}</div>
+                    <div style="font-size: 12px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ tarea.accion }}</div>
+                  </div>
+                  <div style="flex-shrink: 0; text-align: right;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: {{ tarea.tagBg }}; color: {{ tarea.tagColor }}; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap;">{{ tarea.etapa }}</div>
+                    <div style="font-size: 11px; color: #444; margin-top: 4px;">{{ tarea.hora }}</div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color: #333; flex-shrink: 0;"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Panel lateral -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Actividad reciente -->
+            <div style="background: #111; border: 1px solid #1E1E1E; border-radius: 14px; padding: 20px;">
+              <div style="font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px;">Actividad reciente</div>
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <sc-for list="{{ actividad }}" as="act" hint-placeholder-count="4">
+                  <div style="display: flex; gap: 12px;">
+                    <div style="width: 2px; background: #1E1E1E; border-radius: 1px; position: relative; flex-shrink: 0;">
+                      <div style="width: 8px; height: 8px; background: {{ act.dot }}; border-radius: 50%; position: absolute; top: 2px; left: -3px;"></div>
+                    </div>
+                    <div style="padding-bottom: 14px;">
+                      <div style="font-size: 13px; color: #D0D0D0;">{{ act.texto }}</div>
+                      <div style="font-size: 11px; color: #444; margin-top: 2px;">{{ act.tiempo }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- Pipeline rápido -->
+            <div style="background: #111; border: 1px solid #1E1E1E; border-radius: 14px; padding: 20px;">
+              <div style="font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px;">Pipeline</div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ pipeline }}" as="etapa" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 12px; color: #555; width: 110px; flex-shrink: 0;">{{ etapa.nombre }}</div>
+                    <div style="flex: 1; height: 6px; background: #1A1A1A; border-radius: 3px; overflow: hidden;">
+                      <div style="height: 100%; width: {{ etapa.pct }}; background: {{ etapa.color }}; border-radius: 3px; transition: width 1s ease;"></div>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; color: #888; width: 20px; text-align: right; flex-shrink: 0;">{{ etapa.count }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- CLIENTES VIEW -->
+    <sc-if value="{{ isClientes }}" hint-placeholder-val="{{ false }}">
+      <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; animation: fadeUp 0.3s ease;">
+        <!-- Top bar -->
+        <div style="padding: 24px 36px 20px; border-bottom: 1px solid #1A1A1A; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+          <div>
+            <h1 style="font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px;">Clientes &amp; Pipeline</h1>
+            <p style="font-size: 13px; color: #444; margin-top: 2px;">{{ totalClientes }} clientes activos en seguimiento</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; background: #111; border: 1px solid #1E1E1E; border-radius: 8px; padding: 4px; gap: 2px;">
+              <button onClick="{{ setViewKanban }}" style="{{ btnKanban }}">Kanban</button>
+              <button onClick="{{ setViewLista }}" style="{{ btnLista }}">Lista</button>
+            </div>
+            <button onClick="{{ addCliente }}" style="display: flex; align-items: center; gap: 7px; background: #FFDD00; color: #0A0A0A; border: none; padding: 9px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Kanban board -->
+        <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ true }}">
+          <div style="flex: 1; overflow-x: auto; padding: 24px 36px; display: flex; gap: 16px; align-items: flex-start;">
+            <sc-for list="{{ columnas }}" as="col" hint-placeholder-count="5">
+              <div style="min-width: 240px; width: 240px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;">
+                <!-- Column header -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: {{ col.color }};"></div>
+                    <span style="font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.8px;">{{ col.nombre }}</span>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 700; color: {{ col.color }}; background: {{ col.bgLight }}; padding: 2px 8px; border-radius: 20px;">{{ col.count }}</span>
+                </div>
+                <!-- Cards -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <sc-for list="{{ col.clientes }}" as="cli" hint-placeholder-count="2">
+                    <div onClick="{{ cli.onClick }}" style="background: #111; border: 1px solid #1E1E1E; border-radius: 10px; padding: 14px; cursor: pointer;" style-hover="border-color: #2E2E2E; background: #141414;">
+                      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div style="width: 32px; height: 32px; background: {{ cli.avatarBg }}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #0A0A0A; flex-shrink: 0;">{{ cli.inicial }}</div>
+                        <div style="min-width: 0;">
+                          <div style="font-size: 13px; font-weight: 600; color: #F0F0F0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ cli.nombre }}</div>
+                          <div style="font-size: 11px; color: #444;">{{ cli.telefono }}</div>
+                        </div>
+                      </div>
+                      <div style="font-size: 12px; color: #555; margin-bottom: 10px; line-height: 1.4;">{{ cli.proximaAccion }}</div>
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="font-size: 11px; color: {{ cli.urgenciaColor }}; font-weight: 600;">{{ cli.urgencia }}</div>
+                        <div style="display: flex; gap: 6px;">
+                          <div style="width: 24px; height: 24px; background: #1A1A1A; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" style-hover="background: #222;">
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 9l2-1 5.5-5.5-1-1L2.5 7l-1 2Z" stroke="#555" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                          <div style="width: 24px; height: 24px; background: #1A2A14; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" style-hover="background: #1E3A1A;">
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9 2L2 5.5l3 1.5.5 3L9 2Z" stroke="#CCFF00" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <!-- Add button -->
+                <button style="width: 100%; padding: 10px; border: 1.5px dashed #1E1E1E; border-radius: 10px; background: transparent; color: #333; font-family: 'Outfit', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" style-hover="border-color: #2E2E2E; color: #555;">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  Añadir
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- Lista view -->
+        <sc-if value="{{ isLista }}" hint-placeholder-val="{{ false }}">
+          <div style="flex: 1; overflow-y: auto; padding: 20px 36px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 1px solid #1A1A1A;">
+                  <th style="text-align: left; padding: 10px 12px; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Cliente</th>
+                  <th style="text-align: left; padding: 10px 12px; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Etapa</th>
+                  <th style="text-align: left; padding: 10px 12px; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Próxima acción</th>
+                  <th style="text-align: left; padding: 10px 12px; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;">Fecha</th>
+                  <th style="text-align: left; padding: 10px 12px; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ listaClientes }}" as="cli" hint-placeholder-count="6">
+                  <tr style="border-bottom: 1px solid #111;" style-hover="background: #0F0F0F;">
+                    <td style="padding: 14px 12px;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 32px; height: 32px; background: {{ cli.avatarBg }}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #0A0A0A; flex-shrink: 0;">{{ cli.inicial }}</div>
+                        <div>
+                          <div style="font-size: 14px; font-weight: 500; color: #F0F0F0;">{{ cli.nombre }}</div>
+                          <div style="font-size: 12px; color: #444;">{{ cli.telefono }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding: 14px 12px;">
+                      <div style="display: inline-flex; background: {{ cli.tagBg }}; color: {{ cli.tagColor }}; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;">{{ cli.etapa }}</div>
+                    </td>
+                    <td style="padding: 14px 12px; font-size: 13px; color: #777; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ cli.proximaAccion }}</td>
+                    <td style="padding: 14px 12px; font-size: 13px; color: {{ cli.urgenciaColor }}; font-weight: 500;">{{ cli.urgencia }}</td>
+                    <td style="padding: 14px 12px;">
+                      <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                        <button style="padding: 6px 12px; background: #1A1A1A; border: none; border-radius: 6px; color: #888; font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer;" style-hover="background: #222; color: #F0F0F0;">Ver</button>
+                        <button style="padding: 6px 12px; background: #1A2A14; border: none; border-radius: 6px; color: #CCFF00; font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer;" style-hover="background: #1E3A1A;">WA</button>
+                      </div>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- COTIZACIONES VIEW -->
+    <sc-if value="{{ isCotizaciones }}" hint-placeholder-val="{{ false }}">
+      <div style="flex: 1; overflow-y: auto; padding: 32px 36px; animation: fadeUp 0.3s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+          <div>
+            <h1 style="font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px;">Cotizaciones</h1>
+            <p style="font-size: 13px; color: #444; margin-top: 2px;">Links públicos que el cliente puede consultar</p>
+          </div>
+          <button style="display: flex; align-items: center; gap: 8px; background: #FFDD00; color: #0A0A0A; border: none; padding: 10px 18px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Nueva cotización
+          </button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <sc-for list="{{ cotizaciones }}" as="cot" hint-placeholder-count="5">
+            <div style="background: #111; border: 1px solid #1E1E1E; border-radius: 12px; padding: 18px 20px; display: grid; grid-template-columns: 1fr 140px 120px 120px 100px; align-items: center; gap: 16px;" style-hover="border-color: #2E2E2E;">
+              <div>
+                <div style="font-size: 14px; font-weight: 600; color: #F0F0F0;">{{ cot.cliente }}</div>
+                <div style="font-size: 12px; color: #444; margin-top: 2px; font-family: monospace;">{{ cot.token }}</div>
+              </div>
+              <div style="font-size: 15px; font-weight: 700; color: #fff;">{{ cot.monto }}</div>
+              <div>
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: {{ cot.estadoBg }}; color: {{ cot.estadoColor }}; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;">
+                  <div style="width: 5px; height: 5px; border-radius: 50%; background: {{ cot.estadoColor }};"></div>
+                  {{ cot.estado }}
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #555;">{{ cot.fecha }}</div>
+              <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                <button style="padding: 6px 12px; background: #1A1A1A; border: none; border-radius: 6px; color: #888; font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer;" style-hover="background: #222; color: #F0F0F0;">Copiar link</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- PEDIDOS VIEW -->
+    <sc-if value="{{ isPedidos }}" hint-placeholder-val="{{ false }}">
+      <div style="flex: 1; overflow-y: auto; padding: 32px 36px; animation: fadeUp 0.3s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+          <div>
+            <h1 style="font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px;">Pedidos</h1>
+            <p style="font-size: 13px; color: #444; margin-top: 2px;">Registro de ventas con foto del pedido</p>
+          </div>
+          <button style="display: flex; align-items: center; gap: 8px; background: #FFDD00; color: #0A0A0A; border: none; padding: 10px 18px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Registrar pedido
+          </button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <sc-for list="{{ pedidos }}" as="ped" hint-placeholder-count="6">
+            <div style="background: #111; border: 1px solid #1E1E1E; border-radius: 14px; overflow: hidden;" style-hover="border-color: #2E2E2E;">
+              <div style="height: 140px; background: {{ ped.fotoBg }}; display: flex; align-items: center; justify-content: center; position: relative;">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="opacity: 0.3;"><rect x="4" y="8" width="24" height="18" rx="3" stroke="#fff" stroke-width="1.5"/><circle cx="16" cy="17" r="5" stroke="#fff" stroke-width="1.5"/><path d="M12 8V6a2 2 0 012-2h4a2 2 0 012 2v2" stroke="#fff" stroke-width="1.5"/></svg>
+                <div style="position: absolute; top: 10px; right: 10px; background: {{ ped.etapaBg }}; color: {{ ped.etapaColor }}; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">{{ ped.etapa }}</div>
+              </div>
+              <div style="padding: 14px 16px;">
+                <div style="font-size: 14px; font-weight: 600; color: #F0F0F0; margin-bottom: 4px;">{{ ped.cliente }}</div>
+                <div style="font-size: 12px; color: #444; margin-bottom: 12px;">{{ ped.fecha }}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-size: 18px; font-weight: 700; color: #CCFF00;">{{ ped.monto }}</div>
+                  <button style="padding: 6px 12px; background: #1A1A1A; border: none; border-radius: 6px; color: #888; font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer;" style-hover="background: #222;">Posventa</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 900 }
+}">
+class Component extends DCLogic {
+  state = { view: 'dashboard', clienteView: 'kanban' };
+
+  renderVals() {
+    const { view, clienteView } = this.state;
+
+    const navBase = 'display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, color 0.15s;';
+    const navActive = navBase + 'background: #1A1A1A; color: #FFDD00;';
+    const navInactive = navBase + 'color: #444;';
+
+    const btnToggleActive = 'padding: 6px 14px; border-radius: 6px; border: none; background: #222; color: #F0F0F0; font-family: Outfit, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer;';
+    const btnToggleInactive = 'padding: 6px 14px; border-radius: 6px; border: none; background: transparent; color: #444; font-family: Outfit, sans-serif; font-size: 13px; cursor: pointer;';
+
+    const avatarColors = ['#FFDD00','#CCFF00','#FF6B6B','#6BDDFF','#FF9F43','#A29BFE'];
+    const av = (i) => avatarColors[i % avatarColors.length];
+
+    const tareasHoy = [
+      { nombre: 'María González', accion: 'Llamar para hacer seguimiento a la cotización enviada ayer', etapa: 'Cotizó', tagBg: '#1A1F0A', tagColor: '#CCFF00', hora: 'Hace 2 días', avatarBg: av(0), inicial: 'M', onClick: () => {} },
+      { nombre: 'Carlos Rodríguez', accion: 'Preguntar cómo quedó el colchón — primera semana posventa', etapa: 'Posventa', tagBg: '#0A1A1F', tagColor: '#6BDDFF', hora: 'Vence hoy', avatarBg: av(1), inicial: 'C', onClick: () => {} },
+      { nombre: 'Lucía Moreno', accion: 'Pedir referidos — ha comprado 2 veces y está muy satisfecha', etapa: 'Referido', tagBg: '#1F0A1A', tagColor: '#FF9F43', hora: 'Esta semana', avatarBg: av(2), inicial: 'L', onClick: () => {} },
+      { nombre: 'Andrés Pérez', accion: 'Enviar propuesta de colchón King size según lo que buscaba', etapa: 'Prospecto', tagBg: '#1A1A1A', tagColor: '#888', hora: 'Ingresó hoy', avatarBg: av(3), inicial: 'A', onClick: () => {} },
+    ];
+
+    const kpis = [
+      { label: 'Prospectos activos', value: '24', sub: '+3 esta semana', color: '#F0F0F0', icon: '◎' },
+      { label: 'Cotizaciones abiertas', value: '11', sub: '4 vistas por cliente', color: '#FFDD00', icon: '◷' },
+      { label: 'Ventas este mes', value: '8', sub: '$14.2M en pedidos', color: '#CCFF00', icon: '↑' },
+      { label: 'Referidos pedidos', value: '3', sub: '1 convertido', color: '#FF9F43', icon: '★' },
+    ];
+
+    const actividad = [
+      { texto: 'María González vio la cotización #CT-014', tiempo: 'Hace 20 min', dot: '#FFDD00' },
+      { texto: 'Nuevo pedido: Carlos Rodríguez — Colchón Doble', tiempo: 'Hace 2 horas', dot: '#CCFF00' },
+      { texto: 'Seguimiento enviado a 4 clientes vía WhatsApp', tiempo: 'Hace 3 horas', dot: '#6BDDFF' },
+      { texto: 'Lucía Moreno referida por Juan Martínez', tiempo: 'Ayer', dot: '#FF9F43' },
+    ];
+
+    const pipeline = [
+      { nombre: 'Prospecto', count: 9, pct: '38%', color: '#555' },
+      { nombre: 'Cotizó', count: 7, pct: '29%', color: '#FFDD00' },
+      { nombre: 'Compró', count: 4, pct: '17%', color: '#CCFF00' },
+      { nombre: 'Posventa', count: 3, pct: '12%', color: '#6BDDFF' },
+      { nombre: 'Referido', count: 1, pct: '4%', color: '#FF9F43' },
+    ];
+
+    const av2 = (i) => ['#FFDD00','#CCFF00','#FF6B6B','#6BDDFF','#FF9F43','#A29BFE','#FD79A8'][i % 7];
+
+    const cliData = [
+      { nombre: 'María González', telefono: '+57 311 234 5678', etapa: 'Cotizó', proximaAccion: 'Hacer seguimiento a cotización', urgencia: 'Hoy', urgenciaColor: '#FF6B6B', inicial: 'M', avatarBg: av2(0), tagBg: '#1A1F0A', tagColor: '#CCFF00', onClick: () => {} },
+      { nombre: 'Carlos Rodríguez', telefono: '+57 320 987 6543', etapa: 'Posventa', proximaAccion: 'Preguntar satisfacción (1 semana)', urgencia: 'Hoy', urgenciaColor: '#FF6B6B', inicial: 'C', avatarBg: av2(1), tagBg: '#0A1A1F', tagColor: '#6BDDFF', onClick: () => {} },
+      { nombre: 'Lucía Moreno', telefono: '+57 315 555 1234', etapa: 'Referido solicitado', proximaAccion: 'Pedir referidos a familiares', urgencia: 'Esta semana', urgenciaColor: '#FFDD00', inicial: 'L', avatarBg: av2(2), tagBg: '#1F0A0A', tagColor: '#FF9F43', onClick: () => {} },
+      { nombre: 'Andrés Pérez', telefono: '+57 318 222 4567', etapa: 'Prospecto', proximaAccion: 'Enviar cotización King size', urgencia: 'Hoy', urgenciaColor: '#FF6B6B', inicial: 'A', avatarBg: av2(3), tagBg: '#1A1A1A', tagColor: '#888', onClick: () => {} },
+      { nombre: 'Patricia Díaz', telefono: '+57 312 777 8901', etapa: 'Compró', proximaAccion: 'Confirmar entrega del pedido', urgencia: 'Mañana', urgenciaColor: '#FFDD00', inicial: 'P', avatarBg: av2(4), tagBg: '#0A1A0A', tagColor: '#CCFF00', onClick: () => {} },
+      { nombre: 'Tomás Herrera', telefono: '+57 316 333 9012', etapa: 'Prospecto', proximaAccion: 'Primer contacto — vino a ver colchones', urgencia: 'Esta semana', urgenciaColor: '#FFDD00', inicial: 'T', avatarBg: av2(5), tagBg: '#1A1A1A', tagColor: '#888', onClick: () => {} },
+    ];
+
+    const columnas = [
+      { nombre: 'Prospecto', count: 9, color: '#555', bgLight: '#1A1A1A', clientes: [
+        { nombre: 'Andrés Pérez', telefono: '+57 318 222 4567', proximaAccion: 'Enviar cotización King size', urgencia: 'Hoy', urgenciaColor: '#FF6B6B', inicial: 'A', avatarBg: av2(3), onClick: () => {} },
+        { nombre: 'Tomás Herrera', telefono: '+57 316 333 9012', proximaAccion: 'Primer contacto — vino a ver colchones', urgencia: 'Esta semana', urgenciaColor: '#FFDD00', inicial: 'T', avatarBg: av2(5), onClick: () => {} },
+      ]},
+      { nombre: 'Cotizó', count: 7, color: '#FFDD00', bgLight: '#1A1A00', clientes: [
+        { nombre: 'María González', telefono: '+57 311 234 5678', proximaAccion: 'Seguimiento a cotización enviada', urgencia: 'Urgente', urgenciaColor: '#FF6B6B', inicial: 'M', avatarBg: av2(0), onClick: () => {} },
+      ]},
+      { nombre: 'Compró', count: 4, color: '#CCFF00', bgLight: '#1A2A00', clientes: [
+        { nombre: 'Patricia Díaz', telefono: '+57 312 777 8901', proximaAccion: 'Confirmar entrega del pedido', urgencia: 'Mañana', urgenciaColor: '#FFDD00', inicial: 'P', avatarBg: av2(4), onClick: () => {} },
+      ]},
+      { nombre: 'Posventa', count: 3, color: '#6BDDFF', bgLight: '#0A1A2A', clientes: [
+        { nombre: 'Carlos Rodríguez', telefono: '+57 320 987 6543', proximaAccion: 'Preguntar satisfacción (1 semana)', urgencia: 'Hoy', urgenciaColor: '#FF6B6B', inicial: 'C', avatarBg: av2(1), onClick: () => {} },
+      ]},
+      { nombre: 'Referido', count: 1, color: '#FF9F43', bgLight: '#2A1A0A', clientes: [
+        { nombre: 'Lucía Moreno', telefono: '+57 315 555 1234', proximaAccion: 'Pedir referidos a familiares', urgencia: 'Esta semana', urgenciaColor: '#FFDD00', inicial: 'L', avatarBg: av2(2), onClick: () => {} },
+      ]},
+    ];
+
+    const cotizaciones = [
+      { cliente: 'María González', token: 'ct-f3a8b9c2', monto: '$2.450.000', estado: 'Vista', estadoBg: '#1A1F0A', estadoColor: '#CCFF00', fecha: '03 ago 2026' },
+      { cliente: 'Andrés Pérez', token: 'ct-a1b2c3d4', monto: '$3.100.000', estado: 'Enviada', estadoBg: '#1A1A1A', estadoColor: '#888', fecha: '04 ago 2026' },
+      { cliente: 'Pedro Suárez', token: 'ct-e5f6g7h8', monto: '$1.890.000', estado: 'Aceptada', estadoBg: '#0A1A0A', estadoColor: '#CCFF00', fecha: '01 ago 2026' },
+      { cliente: 'Sandra López', token: 'ct-i9j0k1l2', monto: '$4.200.000', estado: 'Vencida', estadoBg: '#2A0A0A', estadoColor: '#FF6B6B', fecha: '25 jul 2026' },
+      { cliente: 'Roberto Castro', token: 'ct-m3n4o5p6', monto: '$2.750.000', estado: 'Enviada', estadoBg: '#1A1A1A', estadoColor: '#888', fecha: '04 ago 2026' },
+    ];
+
+    const pedidos = [
+      { cliente: 'Carlos Rodríguez', monto: '$2.450.000', fecha: '03 ago 2026', fotoBg: 'linear-gradient(135deg, #1A2A14, #0F1F0A)', etapa: 'Posventa', etapaBg: '#0A1A2A', etapaColor: '#6BDDFF' },
+      { cliente: 'Patricia Díaz', monto: '$3.100.000', fecha: '02 ago 2026', fotoBg: 'linear-gradient(135deg, #2A1A0A, #1A0F00)', etapa: 'Entregado', etapaBg: '#0A1A0A', etapaColor: '#CCFF00' },
+      { cliente: 'Pedro Suárez', monto: '$1.890.000', fecha: '30 jul 2026', fotoBg: 'linear-gradient(135deg, #1A1A2A, #0A0A1F)', etapa: 'Referido', etapaBg: '#1F0A0A', etapaColor: '#FF9F43' },
+      { cliente: 'Fernando Ruiz', monto: '$4.750.000', fecha: '28 jul 2026', fotoBg: 'linear-gradient(135deg, #2A0A1A, #1F0A14)', etapa: 'Entregado', etapaBg: '#0A1A0A', etapaColor: '#CCFF00' },
+      { cliente: 'Gloria Niño', monto: '$2.200.000', fecha: '25 jul 2026', fotoBg: 'linear-gradient(135deg, #1A2A1A, #0A1F0A)', etapa: 'Posventa', etapaBg: '#0A1A2A', etapaColor: '#6BDDFF' },
+    ];
+
+    return {
+      pendientesHoy: 4,
+      totalClientes: 24,
+      isDashboard: view === 'dashboard',
+      isClientes: view === 'clientes',
+      isCotizaciones: view === 'cotizaciones',
+      isPedidos: view === 'pedidos',
+      isKanban: clienteView === 'kanban',
+      isLista: clienteView === 'lista',
+      navDashboard: () => this.setState({ view: 'dashboard' }),
+      navClientes: () => this.setState({ view: 'clientes' }),
+      navCotizaciones: () => this.setState({ view: 'cotizaciones' }),
+      navPedidos: () => this.setState({ view: 'pedidos' }),
+      navDashboardStyle: view === 'dashboard' ? navActive : navInactive,
+      navClientesStyle: view === 'clientes' ? navActive : navInactive,
+      navCotizacionesStyle: view === 'cotizaciones' ? navActive : navInactive,
+      navPedidosStyle: view === 'pedidos' ? navActive : navInactive,
+      setViewKanban: () => this.setState({ clienteView: 'kanban' }),
+      setViewLista: () => this.setState({ clienteView: 'lista' }),
+      btnKanban: clienteView === 'kanban' ? btnToggleActive : btnToggleInactive,
+      btnLista: clienteView === 'lista' ? btnToggleActive : btnToggleInactive,
+      addCliente: () => {},
+      tareasHoy,
+      kpis,
+      actividad,
+      pipeline,
+      columnas,
+      listaClientes: cliData,
+      cotizaciones,
+      pedidos,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

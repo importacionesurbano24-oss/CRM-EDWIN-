@@ -174,4 +174,19 @@ RLS activado en todas las tablas, filtrando por `auth.uid()` del usuario dueño 
 
 ## ✅ Estado actual del proyecto
 
-Proyecto nuevo — nada construido todavía. Este `CLAUDE.md` es el punto de partida para la primera sesión de desarrollo.
+- [x] Proyecto Next.js inicializado (App Router + TypeScript + Tailwind v4 + shadcn/ui), paleta de marca y fuente Outfit
+- [x] Login con Supabase Auth + `proxy.ts` protegiendo `(dashboard)` y refrescando sesión
+- [x] Esquema de Supabase (`clientes`, `seguimientos`, vista `clientes_con_etapa`) con RLS por `user_id` — falta correrlo en un proyecto real (ver README)
+- [x] `/dashboard` — KPIs, "hoy toca", actividad reciente, pipeline
+- [x] `/clientes` — Kanban y Lista, alta de cliente
+- [x] `/clientes/[id]` — historial y registro de nuevo seguimiento (incluye cambio de etapa)
+- [x] Página `/setup` con instrucciones si faltan las variables de Supabase
+- [ ] Cotizaciones con link público
+- [ ] Registro de pedidos con foto
+- [ ] Integración de WhatsApp Business Cloud API
+- [ ] Agente de Claude (sugerir próxima acción, redactar mensajes)
+- [ ] Exportación a Excel/PDF
+- [ ] Deploy en Vercel
+
+**Pendiente antes de usar en producción:** crear el proyecto real de Supabase
+y llenar `.env.local` (ver README.md) — hoy corre contra un proyecto vacío.

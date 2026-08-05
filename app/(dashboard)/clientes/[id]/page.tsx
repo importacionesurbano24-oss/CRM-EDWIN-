@@ -10,6 +10,7 @@ import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimientoForm";
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
+import { SugerenciaAgente } from "@/components/pipeline/SugerenciaAgente";
 
 const ORIGEN_LABEL: Record<string, string> = {
   "walk-in": "Llegó a la tienda",
@@ -53,6 +54,10 @@ export default async function ClienteDetallePage({
           </p>
         </div>
         <EtapaBadge etapa={cliente.etapa} />
+      </div>
+
+      <div className="mb-6">
+        <SugerenciaAgente clienteId={cliente.id} />
       </div>
 
       <div className="grid grid-cols-[1fr_1fr] gap-6">

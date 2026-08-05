@@ -154,6 +154,54 @@ export interface Database {
           },
         ];
       };
+      pedidos: {
+        Row: {
+          id: string;
+          user_id: string;
+          cliente_id: string;
+          cotizacion_id: string | null;
+          foto_url: string;
+          monto: number;
+          fecha_compra: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          cliente_id: string;
+          cotizacion_id?: string | null;
+          foto_url: string;
+          monto: number;
+          fecha_compra?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cliente_id?: string;
+          cotizacion_id?: string | null;
+          foto_url?: string;
+          monto?: number;
+          fecha_compra?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pedidos_cotizacion_id_fkey";
+            columns: ["cotizacion_id"];
+            isOneToOne: false;
+            referencedRelation: "cotizaciones";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       clientes_con_etapa: {
@@ -185,5 +233,6 @@ export interface Database {
 export type Cliente = Database["public"]["Tables"]["clientes"]["Row"];
 export type Seguimiento = Database["public"]["Tables"]["seguimientos"]["Row"];
 export type Cotizacion = Database["public"]["Tables"]["cotizaciones"]["Row"];
+export type Pedido = Database["public"]["Tables"]["pedidos"]["Row"];
 export type ClienteConEtapa =
   Database["public"]["Views"]["clientes_con_etapa"]["Row"];

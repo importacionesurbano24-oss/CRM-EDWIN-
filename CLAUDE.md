@@ -182,13 +182,16 @@ RLS activado en todas las tablas, filtrando por `auth.uid()` del usuario dueño 
 - [x] `/clientes/[id]` — historial y registro de nuevo seguimiento (incluye cambio de etapa)
 - [x] Página `/setup` con instrucciones si faltan las variables de Supabase
 - [x] Cotizaciones con link público (`/cotizacion/[token]`), vista_en + notificación realtime a Edwin
-- [ ] Registro de pedidos con foto
+- [x] Registro de pedidos con foto (Supabase Storage privado + signed URLs), vincula cotización y dispara seguimiento posventa a 7 días
+- [x] Agente de Claude (`lib/claude/agente.ts`, Sonnet + structured outputs) — sugiere próxima acción y redacta mensaje, solo copiar/pegar manual, nunca envía nada
 - [ ] Integración de WhatsApp Business Cloud API
-- [ ] Agente de Claude (sugerir próxima acción, redactar mensajes)
 - [ ] Exportación a Excel/PDF
 - [ ] Deploy en Vercel
 
-**Estado de Supabase:** ya hay un proyecto real conectado (`.env.local`
-lleno) y las migraciones `0001_init.sql` y `0002_cotizaciones.sql`
-corridas — probado en vivo: login, clientes, cotizaciones y el link
-público funcionando de punta a punta.
+**Estado de Supabase:** proyecto real conectado (`.env.local` lleno).
+Migraciones corridas: `0001_init.sql`, `0002_cotizaciones.sql`. Falta correr
+`0003_pedidos.sql` (tabla + bucket de Storage). Probado en vivo: login,
+clientes, cotizaciones y el link público funcionando de punta a punta.
+
+**Estado de Claude API:** `ANTHROPIC_API_KEY` todavía vacío en `.env.local`
+— el botón "Sugerir" en el detalle de cliente no funcionará hasta llenarlo.

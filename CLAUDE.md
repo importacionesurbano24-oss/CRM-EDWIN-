@@ -181,12 +181,14 @@ RLS activado en todas las tablas, filtrando por `auth.uid()` del usuario dueño 
 - [x] `/clientes` — Kanban y Lista, alta de cliente
 - [x] `/clientes/[id]` — historial y registro de nuevo seguimiento (incluye cambio de etapa)
 - [x] Página `/setup` con instrucciones si faltan las variables de Supabase
-- [ ] Cotizaciones con link público
+- [x] Cotizaciones con link público (`/cotizacion/[token]`), vista_en + notificación realtime a Edwin
 - [ ] Registro de pedidos con foto
 - [ ] Integración de WhatsApp Business Cloud API
 - [ ] Agente de Claude (sugerir próxima acción, redactar mensajes)
 - [ ] Exportación a Excel/PDF
 - [ ] Deploy en Vercel
 
-**Pendiente antes de usar en producción:** crear el proyecto real de Supabase
-y llenar `.env.local` (ver README.md) — hoy corre contra un proyecto vacío.
+**Estado de Supabase:** ya hay un proyecto real conectado (`.env.local`
+lleno) y las migraciones `0001_init.sql` y `0002_cotizaciones.sql`
+corridas — probado en vivo: login, clientes, cotizaciones y el link
+público funcionando de punta a punta.

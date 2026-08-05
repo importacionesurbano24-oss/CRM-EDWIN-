@@ -1,7 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/login"];
+// Rutas de auth: si ya hay sesión, se redirige lejos de ellas (ej. /login).
+const AUTH_ROUTES = ["/login"];
+
+// Rutas siempre públicas sin importar la sesión — el cliente abre su
+// cotización por link, esté Edwin logueado en ese navegador o no.
+function esRutaPublicaSiempre(pathname: string) {
+  return pathname.startsWith("/cotizacion/");
+}
 
 function faltaConfiguracion() {
   return !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -51,7 +58,11 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  if (esRutaPublicaSiempre(pathname)) {
+    return supabaseResponse;
+  }
+
+  const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
   if (pathname === "/") {
     const url = request.nextUrl.clone();
@@ -59,13 +70,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && isPublicRoute) {
+  if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

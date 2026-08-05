@@ -6,8 +6,10 @@ import {
   getClientesConEtapa,
   getActividadReciente,
 } from "@/lib/data/clientes";
+import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { calcularUrgencia, esPendienteHoy } from "@/lib/ui/urgencia";
+import { estadoEfectivo } from "@/lib/ui/cotizacion";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { NuevoClienteDialog } from "@/components/pipeline/NuevoClienteDialog";
@@ -46,9 +48,10 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [clientes, actividad] = await Promise.all([
+  const [clientes, actividad, cotizaciones] = await Promise.all([
     getClientesConEtapa(supabase),
     getActividadReciente(supabase, 5),
+    getCotizaciones(supabase),
   ]);
 
   const nombreSaludo = user?.email?.split("@")[0] ?? "";
@@ -76,7 +79,10 @@ export default async function DashboardPage() {
     },
     {
       label: "Cotizaciones abiertas",
-      value: contarEtapa("cotizo"),
+      value: cotizaciones.filter((c) => {
+        const estado = estadoEfectivo(c);
+        return estado === "enviada" || estado === "vista";
+      }).length,
       sub: "esperando respuesta",
       color: ETAPA_META.cotizo.color,
     },

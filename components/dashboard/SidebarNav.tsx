@@ -7,12 +7,10 @@ import { LayoutGrid, Users, FileText, Package } from "lucide-react";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/cotizaciones", label: "Cotizaciones", icon: FileText },
 ];
 
-const NAV_PRONTO = [
-  { label: "Cotizaciones", icon: FileText },
-  { label: "Pedidos", icon: Package },
-];
+const NAV_PRONTO = [{ label: "Pedidos", icon: Package }];
 
 export function SidebarNav() {
   const pathname = usePathname();

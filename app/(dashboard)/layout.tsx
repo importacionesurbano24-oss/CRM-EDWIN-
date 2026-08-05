@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getClientesConEtapa } from "@/lib/data/clientes";
 import { esPendienteHoy } from "@/lib/ui/urgencia";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { CotizacionRealtimeListener } from "@/components/dashboard/CotizacionRealtimeListener";
 
 export default async function DashboardLayout({
   children,
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       <Sidebar pendientesHoy={pendientesHoy} userEmail={user?.email ?? ""} />
       <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
+      {user && <CotizacionRealtimeListener userId={user.id} />}
     </div>
   );
 }

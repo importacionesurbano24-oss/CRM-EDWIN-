@@ -17,6 +17,14 @@ export type Etapa =
 
 export type Origen = "walk-in" | "referido" | "otro";
 
+export type EstadoCotizacion = "enviada" | "vista" | "aceptada" | "vencida";
+
+export interface ProductoItem {
+  nombre: string;
+  cantidad: number;
+  precio_unitario: number;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -102,6 +110,50 @@ export interface Database {
           },
         ];
       };
+      cotizaciones: {
+        Row: {
+          id: string;
+          user_id: string;
+          cliente_id: string;
+          productos: ProductoItem[];
+          monto_total: number;
+          token_publico: string;
+          estado: EstadoCotizacion;
+          vista_en: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          cliente_id: string;
+          productos?: ProductoItem[];
+          monto_total?: number;
+          token_publico?: string;
+          estado?: EstadoCotizacion;
+          vista_en?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cliente_id?: string;
+          productos?: ProductoItem[];
+          monto_total?: number;
+          token_publico?: string;
+          estado?: EstadoCotizacion;
+          vista_en?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cotizaciones_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       clientes_con_etapa: {
@@ -132,5 +184,6 @@ export interface Database {
 
 export type Cliente = Database["public"]["Tables"]["clientes"]["Row"];
 export type Seguimiento = Database["public"]["Tables"]["seguimientos"]["Row"];
+export type Cotizacion = Database["public"]["Tables"]["cotizaciones"]["Row"];
 export type ClienteConEtapa =
   Database["public"]["Views"]["clientes_con_etapa"]["Row"];

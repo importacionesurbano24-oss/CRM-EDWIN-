@@ -11,9 +11,9 @@ export function ClientesView({ clientes }: { clientes: ClienteConEtapa[] }) {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-9 pt-6 pb-5">
+      <div className="flex shrink-0 flex-col gap-4 border-b border-border px-4 pt-5 pb-5 sm:flex-row sm:items-center sm:justify-between md:px-9 md:pt-6">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-white">
+          <h1 className="text-xl font-bold tracking-tight text-white md:text-[22px]">
             Clientes &amp; Pipeline
           </h1>
           <p className="mt-0.5 text-[13px] text-[#444]">

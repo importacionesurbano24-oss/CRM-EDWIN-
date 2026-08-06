@@ -6,7 +6,7 @@ import { ClienteAvatar } from "./ClienteAvatar";
 
 export function KanbanBoard({ clientes }: { clientes: ClienteConEtapa[] }) {
   return (
-    <div className="flex flex-1 items-start gap-4 overflow-x-auto px-9 pb-6">
+    <div className="flex flex-1 items-start gap-4 overflow-x-auto px-4 pb-6 md:px-9">
       {ETAPA_ORDEN.map((etapa) => {
         const meta = ETAPA_META[etapa];
         const items = clientes.filter((c) =>

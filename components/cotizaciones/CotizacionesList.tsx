@@ -33,7 +33,7 @@ export function CotizacionesList({
         return (
           <div
             key={cot.id}
-            className="grid grid-cols-[1fr_140px_120px_100px_auto] items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 transition-colors hover:border-[#2E2E2E]"
+            className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-4 transition-colors hover:border-[#2E2E2E] md:grid md:grid-cols-[1fr_140px_120px_100px_auto] md:items-center md:gap-4 md:px-5"
           >
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-[#F0F0F0]">
@@ -43,10 +43,10 @@ export function CotizacionesList({
                 {cot.token_publico.slice(0, 8)}
               </div>
             </div>
-            <div className="text-[15px] font-bold text-white">
-              {formatMoneda(cot.monto_total)}
-            </div>
-            <div>
+            <div className="flex items-center justify-between gap-3 md:contents">
+              <div className="text-[15px] font-bold text-white">
+                {formatMoneda(cot.monto_total)}
+              </div>
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
                 style={{ background: estadoBg(meta.color), color: meta.color }}
@@ -61,7 +61,7 @@ export function CotizacionesList({
             <div className="text-xs text-[#555]">
               {format(new Date(cot.created_at), "d MMM yyyy", { locale: es })}
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center gap-2 md:justify-end">
               {estado !== "aceptada" && estado !== "vencida" && (
                 <MarcarAceptadaButton cotizacionId={cot.id} />
               )}

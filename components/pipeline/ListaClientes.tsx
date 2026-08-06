@@ -14,7 +14,7 @@ import {
 
 export function ListaClientes({ clientes }: { clientes: ClienteConEtapa[] }) {
   return (
-    <div className="flex-1 overflow-y-auto px-9 pb-6">
+    <div className="flex-1 overflow-y-auto px-4 pb-6 md:px-9">
       <Table>
         <TableHeader>
           <TableRow>

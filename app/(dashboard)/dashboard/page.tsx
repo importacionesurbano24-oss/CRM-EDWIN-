@@ -120,13 +120,13 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="flex-1 overflow-y-auto px-9 py-8">
-      <div className="mb-8 flex items-start justify-between">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-1 text-[11px] tracking-wide text-[#444] uppercase">
             {nombrePorDia()}
           </div>
-          <h1 className="text-[28px] font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-white md:text-[28px]">
             {nombreSaludo ? `Buenos días, ${nombreSaludo} 👋` : "Buenos días 👋"}
           </h1>
           <p className="mt-1 text-sm text-[#555]">
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
         <NuevoClienteDialog />
       </div>
 
-      <div className="mb-8 grid grid-cols-4 gap-4">
+      <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-[1fr_360px] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
         <div>
           <div className="mb-4 flex items-center gap-2.5">
             <div className="h-2 w-2 rounded-full bg-primary" />

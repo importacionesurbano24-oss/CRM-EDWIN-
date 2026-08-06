@@ -18,8 +18,8 @@ export default async function PedidosPage() {
   for (const c of clientes) etapaPorCliente[c.id] = c.etapa;
 
   return (
-    <div className="flex-1 overflow-y-auto px-9 py-8">
-      <div className="mb-7 flex items-center justify-between">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
+      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-white">
             Pedidos

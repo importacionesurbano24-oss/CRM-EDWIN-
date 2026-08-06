@@ -32,7 +32,7 @@ export default async function ClienteDetallePage({
   const historial = await getHistorialCliente(supabase, id);
 
   return (
-    <div className="flex-1 overflow-y-auto px-9 py-8">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
       <Link
         href="/clientes"
         className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#666] hover:text-foreground"
@@ -41,7 +41,7 @@ export default async function ClienteDetallePage({
         Volver a clientes
       </Link>
 
-      <div className="mb-8 flex items-center gap-4">
+      <div className="mb-8 flex flex-wrap items-center gap-4">
         <ClienteAvatar id={cliente.id} nombre={cliente.nombre} size={52} />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-bold tracking-tight text-white">
@@ -60,7 +60,7 @@ export default async function ClienteDetallePage({
         <SugerenciaAgente clienteId={cliente.id} />
       </div>
 
-      <div className="grid grid-cols-[1fr_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="rounded-[14px] border border-border bg-card p-6">
           <h2 className="mb-4 text-xs font-semibold tracking-wide text-[#555] uppercase">
             Registrar seguimiento

@@ -14,6 +14,7 @@ export async function actionCrearCliente(
     telefono_whatsapp: formData.get("telefono_whatsapp"),
     email: formData.get("email"),
     origen: formData.get("origen"),
+    etapa: formData.get("etapa"),
     proxima_accion: formData.get("proxima_accion"),
     proxima_accion_fecha: formData.get("proxima_accion_fecha"),
   });
@@ -27,6 +28,7 @@ export async function actionCrearCliente(
     telefono_whatsapp,
     email,
     origen,
+    etapa,
     proxima_accion,
     proxima_accion_fecha,
   } = parsed.data;
@@ -55,8 +57,8 @@ export async function actionCrearCliente(
     .from("seguimientos")
     .insert({
       cliente_id: cliente.id,
-      etapa: "prospecto",
-      proxima_accion: proxima_accion || "Primer contacto",
+      etapa,
+      proxima_accion: proxima_accion || null,
       proxima_accion_fecha: proxima_accion_fecha || null,
     });
 

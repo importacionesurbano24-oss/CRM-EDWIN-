@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 
 export function NuevoClienteDialog() {
   const [open, setOpen] = useState(false);
@@ -92,18 +93,35 @@ export function NuevoClienteDialog() {
               placeholder="maria@correo.com"
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="origen">Origen</Label>
-            <Select name="origen" defaultValue="walk-in">
-              <SelectTrigger id="origen" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="walk-in">Llegó a la tienda</SelectItem>
-                <SelectItem value="referido">Referido</SelectItem>
-                <SelectItem value="otro">Otro</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="origen">Origen</Label>
+              <Select name="origen" defaultValue="walk-in">
+                <SelectTrigger id="origen" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="walk-in">Llegó a la tienda</SelectItem>
+                  <SelectItem value="referido">Referido</SelectItem>
+                  <SelectItem value="otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="etapa">Etapa</Label>
+              <Select name="etapa" defaultValue="prospecto">
+                <SelectTrigger id="etapa" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ETAPA_ORDEN.map((etapa) => (
+                    <SelectItem key={etapa} value={etapa}>
+                      {ETAPA_META[etapa].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">

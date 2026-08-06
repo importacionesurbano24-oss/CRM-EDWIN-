@@ -26,6 +26,7 @@ export const NuevoClienteSchema = z.object({
     .optional()
     .or(z.literal("")),
   origen: z.enum(ORIGENES),
+  etapa: z.enum(ETAPAS),
   proxima_accion: z.string().trim().optional().or(z.literal("")),
   proxima_accion_fecha: z.string().trim().optional().or(z.literal("")),
 });

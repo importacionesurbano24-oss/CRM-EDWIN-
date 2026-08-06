@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import type { ClienteConEtapa } from "@/lib/types";
+import Link from "next/link";
+import { X } from "lucide-react";
+import type { ClienteConEtapa, Etapa } from "@/lib/types";
+import { ETAPA_META } from "@/lib/ui/etapa";
 import { KanbanBoard } from "./KanbanBoard";
 import { ListaClientes } from "./ListaClientes";
 import { NuevoClienteDialog } from "./NuevoClienteDialog";
 
-export function ClientesView({ clientes }: { clientes: ClienteConEtapa[] }) {
-  const [vista, setVista] = useState<"kanban" | "lista">("kanban");
+export function ClientesView({
+  clientes,
+  filtroEtapas = [],
+}: {
+  clientes: ClienteConEtapa[];
+  filtroEtapas?: Etapa[];
+}) {
+  const hayFiltro = filtroEtapas.length > 0;
+  const [vista, setVista] = useState<"kanban" | "lista">(
+    hayFiltro ? "lista" : "kanban"
+  );
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -17,7 +29,8 @@ export function ClientesView({ clientes }: { clientes: ClienteConEtapa[] }) {
             Clientes &amp; Pipeline
           </h1>
           <p className="mt-0.5 text-[13px] text-[#444]">
-            {clientes.length} clientes activos en seguimiento
+            {clientes.length} clientes{" "}
+            {hayFiltro ? "en este filtro" : "activos en seguimiento"}
           </p>
         </div>
         <div className="flex items-center gap-2.5">
@@ -48,6 +61,19 @@ export function ClientesView({ clientes }: { clientes: ClienteConEtapa[] }) {
           <NuevoClienteDialog />
         </div>
       </div>
+
+      {hayFiltro && (
+        <div className="px-4 pt-4 md:px-9">
+          <Link
+            href="/clientes"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+          >
+            Filtro:{" "}
+            {filtroEtapas.map((e) => ETAPA_META[e].label).join(" + ")}
+            <X className="size-3.5" />
+          </Link>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col overflow-hidden pt-5">
         {vista === "kanban" ? (

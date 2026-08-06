@@ -12,14 +12,16 @@ import { MarcarAceptadaButton } from "./MarcarAceptadaButton";
 
 export function CotizacionesList({
   cotizaciones,
+  mensajeVacio,
 }: {
   cotizaciones: CotizacionConCliente[];
+  mensajeVacio?: string;
 }) {
   if (cotizaciones.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-10 text-center text-sm text-[#555]">
-        Todavía no hay cotizaciones. Crea la primera con &quot;Nueva
-        cotización&quot;.
+        {mensajeVacio ??
+          'Todavía no hay cotizaciones. Crea la primera con "Nueva cotización".'}
       </div>
     );
   }

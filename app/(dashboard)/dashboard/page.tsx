@@ -11,7 +11,11 @@ import {
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { calcularUrgencia, esPendienteHoy } from "@/lib/ui/urgencia";
-import { estadoEfectivo } from "@/lib/ui/cotizacion";
+import {
+  coincideConFiltroCotizacion,
+  FILTRO_COTIZACION_META,
+  type FiltroCotizacion,
+} from "@/lib/ui/cotizacion";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { NuevoClienteDialog } from "@/components/pipeline/NuevoClienteDialog";
@@ -73,21 +77,37 @@ export default async function DashboardPage() {
     (c) => new Date(c.created_at) >= inicioSemana
   ).length;
 
-  const kpis = [
+  const contarFiltroCotizacion = (filtro: FiltroCotizacion) =>
+    cotizaciones.filter((c) => coincideConFiltroCotizacion(c, filtro)).length;
+
+  const subFiltrosCotizacion = (
+    ["vencidas", "sin_respuesta", "seguimiento"] as FiltroCotizacion[]
+  )
+    .map((filtro) => ({ filtro, count: contarFiltroCotizacion(filtro) }))
+    .filter((f) => f.count > 0);
+
+  const kpis: {
+    label: string;
+    value: number;
+    sub: string;
+    color: string;
+    href: string;
+    subFiltros?: { filtro: FiltroCotizacion; count: number }[];
+  }[] = [
     {
       label: "Prospectos activos",
       value: contarEtapa("prospecto"),
       sub: `+${nuevosEstaSemana} esta semana`,
       color: "#F0F0F0",
+      href: "/clientes?etapa=prospecto",
     },
     {
       label: "Cotizaciones abiertas",
-      value: cotizaciones.filter((c) => {
-        const estado = estadoEfectivo(c);
-        return estado === "enviada" || estado === "vista";
-      }).length,
-      sub: "esperando respuesta",
+      value: contarFiltroCotizacion("pendientes"),
+      sub: "esperando respuesta — click para ver",
       color: ETAPA_META.cotizo.color,
+      href: "/cotizaciones?filtro=pendientes",
+      subFiltros: subFiltrosCotizacion,
     },
     {
       label: "Clientes que compraron",
@@ -98,12 +118,14 @@ export default async function DashboardPage() {
       ]),
       sub: "alguna vez",
       color: ETAPA_META.compro.color,
+      href: "/clientes?etapa=compro,posventa,referido_solicitado",
     },
     {
       label: "Referidos pedidos",
       value: clientesQueAlcanzaron(seguimientos, ["referido_solicitado"]),
       sub: "alguna vez",
       color: ETAPA_META.referido_solicitado.color,
+      href: "/clientes?etapa=referido_solicitado",
     },
   ];
 
@@ -144,18 +166,44 @@ export default async function DashboardPage() {
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
-            className="rounded-[14px] border border-border bg-card p-5"
+            className="group rounded-[14px] border border-border bg-card p-5 transition-colors hover:border-[#2E2E2E]"
           >
-            <div className="mb-3 text-[11px] tracking-wide text-[#444] uppercase">
-              {kpi.label}
-            </div>
-            <div
-              className="text-[32px] leading-none font-extrabold tracking-tight"
-              style={{ color: kpi.color }}
-            >
-              {kpi.value}
-            </div>
-            <div className="mt-1.5 text-xs text-[#444]">{kpi.sub}</div>
+            <Link href={kpi.href} className="block">
+              <div className="mb-3 flex items-center justify-between text-[11px] tracking-wide text-[#444] uppercase">
+                <span>{kpi.label}</span>
+                <span className="opacity-0 transition-opacity group-hover:opacity-100">
+                  →
+                </span>
+              </div>
+              <div
+                className="text-[32px] leading-none font-extrabold tracking-tight"
+                style={{ color: kpi.color }}
+              >
+                {kpi.value}
+              </div>
+              <div className="mt-1.5 text-xs text-[#444]">{kpi.sub}</div>
+            </Link>
+
+            {kpi.subFiltros && kpi.subFiltros.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
+                {kpi.subFiltros.map(({ filtro, count }) => {
+                  const meta = FILTRO_COTIZACION_META[filtro];
+                  return (
+                    <Link
+                      key={filtro}
+                      href={`/cotizaciones?filtro=${filtro}`}
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-opacity hover:opacity-80"
+                      style={{
+                        background: `${meta.color}22`,
+                        color: meta.color,
+                      }}
+                    >
+                      {count} {meta.label.split(" ")[0]}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         ))}
       </div>

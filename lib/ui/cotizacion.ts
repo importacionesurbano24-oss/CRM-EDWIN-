@@ -33,6 +33,48 @@ export function estadoEfectivo(
   return diasTranscurridos > DIAS_VALIDEZ ? "vencida" : cotizacion.estado;
 }
 
+export const FILTROS_COTIZACION = [
+  "pendientes",
+  "vencidas",
+  "sin_respuesta",
+  "seguimiento",
+] as const;
+export type FiltroCotizacion = (typeof FILTROS_COTIZACION)[number];
+
+export const FILTRO_COTIZACION_META: Record<
+  FiltroCotizacion,
+  { label: string; color: string }
+> = {
+  pendientes: { label: "Pendientes de respuesta", color: "#FFDD00" },
+  vencidas: { label: "Vencidas", color: "#FF6B6B" },
+  sin_respuesta: { label: "Sin abrir", color: "#888888" },
+  seguimiento: { label: "Vistas — necesitan seguimiento", color: "#CCFF00" },
+};
+
+/**
+ * A qué "punto de acción" pertenece esta cotización. Todo se calcula sobre
+ * estadoEfectivo, así que los buckets no se pisan entre sí (una vencida no
+ * cuenta también como "sin_respuesta", por ejemplo).
+ */
+export function coincideConFiltroCotizacion(
+  cotizacion: Pick<Cotizacion, "estado" | "created_at">,
+  filtro: FiltroCotizacion
+): boolean {
+  const estado = estadoEfectivo(cotizacion);
+  switch (filtro) {
+    case "pendientes":
+      return estado === "enviada" || estado === "vista";
+    case "vencidas":
+      return estado === "vencida";
+    case "sin_respuesta":
+      return estado === "enviada";
+    case "seguimiento":
+      return estado === "vista";
+    default:
+      return false;
+  }
+}
+
 export function formatMoneda(valor: number): string {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",

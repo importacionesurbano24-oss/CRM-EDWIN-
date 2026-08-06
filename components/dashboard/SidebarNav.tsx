@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, FileText, Package } from "lucide-react";
+import { LayoutGrid, Users, Package } from "lucide-react";
 
+// El módulo de Cotizaciones (link público con seguimiento en tiempo real)
+// sigue existiendo en /cotizaciones, pero se ocultó del menú porque Edwin
+// cotiza en otra herramienta y usa el link externo en "Registrar
+// seguimiento" en su lugar. No se borró el código ni los datos.
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/cotizaciones", label: "Cotizaciones", icon: FileText },
   { href: "/pedidos", label: "Pedidos", icon: Package },
 ];
 

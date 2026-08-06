@@ -1,6 +1,6 @@
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, ClienteConEtapa, Seguimiento } from "@/lib/types";
+import type { Database, ClienteConEtapa, Seguimiento, Etapa } from "@/lib/types";
 
 type DB = SupabaseClient<Database>;
 
@@ -55,6 +55,37 @@ export const getHistorialCliente = cache(async function getHistorialCliente(
   }
   return data ?? [];
 });
+
+/**
+ * cliente_id + etapa de CADA seguimiento (no solo el más reciente por
+ * cliente). Sirve para KPIs tipo "clientes que compraron alguna vez" —
+ * clientes_con_etapa solo da la etapa actual, así que un cliente que ya
+ * avanzó a posventa dejaría de contar como "compró" si solo miráramos ahí.
+ */
+export const getTodosLosSeguimientos = cache(async function getTodosLosSeguimientos(
+  supabase: DB
+): Promise<Pick<Seguimiento, "cliente_id" | "etapa">[]> {
+  const { data, error } = await supabase
+    .from("seguimientos")
+    .select("cliente_id, etapa");
+
+  if (error) {
+    console.error("getTodosLosSeguimientos:", error.message);
+    return [];
+  }
+  return data ?? [];
+});
+
+/** Clientes distintos que en algún momento tuvieron un seguimiento en alguna de estas etapas. */
+export function clientesQueAlcanzaron(
+  seguimientos: Pick<Seguimiento, "cliente_id" | "etapa">[],
+  etapas: Etapa[]
+): number {
+  const ids = new Set(
+    seguimientos.filter((s) => etapas.includes(s.etapa)).map((s) => s.cliente_id)
+  );
+  return ids.size;
+}
 
 export interface ActividadReciente {
   id: string;

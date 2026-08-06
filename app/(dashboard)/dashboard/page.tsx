@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getClientesConEtapa,
   getActividadReciente,
+  getTodosLosSeguimientos,
+  clientesQueAlcanzaron,
 } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
@@ -48,10 +50,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [clientes, actividad, cotizaciones] = await Promise.all([
+  const [clientes, actividad, cotizaciones, seguimientos] = await Promise.all([
     getClientesConEtapa(supabase),
     getActividadReciente(supabase, 5),
     getCotizaciones(supabase),
+    getTodosLosSeguimientos(supabase),
   ]);
 
   const nombreSaludo = user?.email?.split("@")[0] ?? "";
@@ -88,14 +91,18 @@ export default async function DashboardPage() {
     },
     {
       label: "Clientes que compraron",
-      value: contarEtapa("compro"),
-      sub: "en esta etapa",
+      value: clientesQueAlcanzaron(seguimientos, [
+        "compro",
+        "posventa",
+        "referido_solicitado",
+      ]),
+      sub: "alguna vez",
       color: ETAPA_META.compro.color,
     },
     {
       label: "Referidos pedidos",
-      value: contarEtapa("referido_solicitado"),
-      sub: "en seguimiento",
+      value: clientesQueAlcanzaron(seguimientos, ["referido_solicitado"]),
+      sub: "alguna vez",
       color: ETAPA_META.referido_solicitado.color,
     },
   ];

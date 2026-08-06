@@ -1,8 +1,6 @@
-import Link from "next/link";
 import type { ClienteConEtapa } from "@/lib/types";
 import { ETAPA_META, ETAPA_ORDEN, etapaBg } from "@/lib/ui/etapa";
-import { calcularUrgencia } from "@/lib/ui/urgencia";
-import { ClienteAvatar } from "./ClienteAvatar";
+import { KanbanCard } from "./KanbanCard";
 
 export function KanbanBoard({ clientes }: { clientes: ClienteConEtapa[] }) {
   return (
@@ -39,39 +37,9 @@ export function KanbanBoard({ clientes }: { clientes: ClienteConEtapa[] }) {
             </div>
 
             <div className="flex flex-col gap-2">
-              {items.map((cliente) => {
-                const urgencia = calcularUrgencia(
-                  cliente.proxima_accion_fecha
-                );
-                return (
-                  <Link
-                    key={cliente.id}
-                    href={`/clientes/${cliente.id}`}
-                    className="rounded-[10px] border border-border bg-card p-3.5 transition-colors hover:border-[#2E2E2E] hover:bg-[#141414]"
-                  >
-                    <div className="mb-2.5 flex items-center gap-2.5">
-                      <ClienteAvatar id={cliente.id} nombre={cliente.nombre} />
-                      <div className="min-w-0">
-                        <div className="truncate text-[13px] font-semibold text-[#F0F0F0]">
-                          {cliente.nombre}
-                        </div>
-                        <div className="text-[11px] text-[#444]">
-                          {cliente.telefono_whatsapp}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mb-2.5 line-clamp-2 text-xs text-[#555]">
-                      {cliente.proxima_accion || "Sin próxima acción"}
-                    </div>
-                    <div
-                      className="text-[11px] font-semibold"
-                      style={{ color: urgencia.color }}
-                    >
-                      {urgencia.label}
-                    </div>
-                  </Link>
-                );
-              })}
+              {items.map((cliente) => (
+                <KanbanCard key={cliente.id} cliente={cliente} />
+              ))}
               {items.length === 0 && (
                 <div className="rounded-[10px] border border-dashed border-[#1E1E1E] p-4 text-center text-[11px] text-[#333]">
                   Vacío

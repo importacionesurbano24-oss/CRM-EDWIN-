@@ -16,14 +16,21 @@ export async function actionRegistrarSeguimiento(
     proxima_accion: formData.get("proxima_accion"),
     proxima_accion_fecha: formData.get("proxima_accion_fecha"),
     notas: formData.get("notas"),
+    link_cotizacion: formData.get("link_cotizacion"),
   });
 
   if (!parsed.success) {
     return { data: null, error: parsed.error.issues[0].message };
   }
 
-  const { cliente_id, etapa, proxima_accion, proxima_accion_fecha, notas } =
-    parsed.data;
+  const {
+    cliente_id,
+    etapa,
+    proxima_accion,
+    proxima_accion_fecha,
+    notas,
+    link_cotizacion,
+  } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -34,6 +41,7 @@ export async function actionRegistrarSeguimiento(
       proxima_accion: proxima_accion || null,
       proxima_accion_fecha: proxima_accion_fecha || null,
       notas: notas || null,
+      link_cotizacion: link_cotizacion || null,
     })
     .select()
     .single();

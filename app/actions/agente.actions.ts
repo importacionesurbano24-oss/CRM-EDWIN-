@@ -5,6 +5,7 @@ import { getClienteConEtapa, getHistorialCliente } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
 import { sugerirProximaAccion, type Sugerencia } from "@/lib/claude/agente";
+import { leerContenidoUrl } from "@/lib/utils/leer-url";
 import type { ActionResult } from "@/lib/action-result";
 
 export async function actionSugerirProximaAccion(
@@ -23,12 +24,18 @@ export async function actionSugerirProximaAccion(
     return { data: null, error: "Cliente no encontrado." };
   }
 
+  const linkMasReciente = historial.find((h) => h.link_cotizacion)?.link_cotizacion;
+  const cotizacionExterna = linkMasReciente
+    ? { url: linkMasReciente, contenido: await leerContenidoUrl(linkMasReciente) }
+    : null;
+
   try {
     const sugerencia = await sugerirProximaAccion({
       cliente,
       historial,
       cotizaciones: cotizaciones.filter((c) => c.cliente_id === clienteId),
       pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
+      cotizacionExterna,
     });
     return { data: sugerencia, error: null };
   } catch (error) {

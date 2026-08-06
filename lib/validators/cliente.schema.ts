@@ -39,6 +39,12 @@ export const NuevoSeguimientoSchema = z.object({
   proxima_accion: z.string().trim().optional().or(z.literal("")),
   proxima_accion_fecha: z.string().trim().optional().or(z.literal("")),
   notas: z.string().trim().optional().or(z.literal("")),
+  link_cotizacion: z
+    .string()
+    .trim()
+    .url("Ingresa un link válido (debe empezar con https://).")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type NuevoSeguimientoInput = z.infer<typeof NuevoSeguimientoSchema>;

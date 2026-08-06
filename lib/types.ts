@@ -78,6 +78,7 @@ export interface Database {
           proxima_accion: string | null;
           proxima_accion_fecha: string | null;
           notas: string | null;
+          link_cotizacion: string | null;
           created_at: string;
         };
         Insert: {
@@ -88,6 +89,7 @@ export interface Database {
           proxima_accion?: string | null;
           proxima_accion_fecha?: string | null;
           notas?: string | null;
+          link_cotizacion?: string | null;
           created_at?: string;
         };
         Update: {
@@ -98,6 +100,7 @@ export interface Database {
           proxima_accion?: string | null;
           proxima_accion_fecha?: string | null;
           notas?: string | null;
+          link_cotizacion?: string | null;
           created_at?: string;
         };
         Relationships: [

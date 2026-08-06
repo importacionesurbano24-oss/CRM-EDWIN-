@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { ExternalLink } from "lucide-react";
 import type { Seguimiento } from "@/lib/types";
 import { ETAPA_META } from "@/lib/ui/etapa";
 import { EtapaBadge } from "./EtapaBadge";
@@ -40,6 +41,17 @@ export function HistorialSeguimientos({ items }: { items: Seguimiento[] }) {
             )}
             {item.notas && (
               <p className="mt-1 text-[13px] text-[#888]">{item.notas}</p>
+            )}
+            {item.link_cotizacion && (
+              <a
+                href={item.link_cotizacion}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:underline"
+              >
+                Ver cotización externa
+                <ExternalLink className="size-3" />
+              </a>
             )}
           </div>
         </div>

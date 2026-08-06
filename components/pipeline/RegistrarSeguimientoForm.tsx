@@ -93,6 +93,22 @@ export function RegistrarSeguimientoForm({
           rows={3}
         />
       </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="link_cotizacion">
+          Link de cotización externa (opcional)
+        </Label>
+        <Input
+          id="link_cotizacion"
+          name="link_cotizacion"
+          type="url"
+          placeholder="https://..."
+        />
+        <p className="text-xs text-[#555]">
+          Si ya cotizaste a este cliente en otra herramienta, pega aquí el
+          link. Queda guardado en el historial y el agente lo lee al sugerir
+          la próxima acción.
+        </p>
+      </div>
       <SubmitButton />
     </form>
   );

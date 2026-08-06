@@ -38,6 +38,8 @@ export interface ContextoCliente {
   historial: Pick<Seguimiento, "etapa" | "notas" | "proxima_accion" | "created_at">[];
   cotizaciones: Pick<Cotizacion, "monto_total" | "estado" | "created_at">[];
   pedidos: Pick<Pedido, "monto" | "fecha_compra">[];
+  /** Contenido ya extraído de la cotización externa más reciente (si el cliente tiene una anexada). */
+  cotizacionExterna?: { url: string; contenido: string } | null;
 }
 
 let cachedClient: Anthropic | null = null;
@@ -68,7 +70,7 @@ export async function sugerirProximaAccion(
 }
 
 function formatearContexto(ctx: ContextoCliente): string {
-  const { cliente, historial, cotizaciones, pedidos } = ctx;
+  const { cliente, historial, cotizaciones, pedidos, cotizacionExterna } = ctx;
   const lineas: string[] = [];
 
   lineas.push(`Cliente: ${cliente.nombre}`);
@@ -118,6 +120,12 @@ function formatearContexto(ctx: ContextoCliente): string {
   }
   for (const p of pedidos) {
     lineas.push(`- [${p.fecha_compra}] ${formatMoneda(p.monto)}`);
+  }
+
+  if (cotizacionExterna) {
+    lineas.push("");
+    lineas.push(`Contenido de la cotización externa (${cotizacionExterna.url}):`);
+    lineas.push(cotizacionExterna.contenido);
   }
 
   lineas.push("");

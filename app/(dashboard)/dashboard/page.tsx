@@ -8,14 +8,8 @@ import {
   getTodosLosSeguimientos,
   clientesQueAlcanzaron,
 } from "@/lib/data/clientes";
-import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { calcularUrgencia, esPendienteHoy } from "@/lib/ui/urgencia";
-import {
-  coincideConFiltroCotizacion,
-  FILTRO_COTIZACION_META,
-  type FiltroCotizacion,
-} from "@/lib/ui/cotizacion";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { NuevoClienteDialog } from "@/components/pipeline/NuevoClienteDialog";
@@ -54,10 +48,9 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [clientes, actividad, cotizaciones, seguimientos] = await Promise.all([
+  const [clientes, actividad, seguimientos] = await Promise.all([
     getClientesConEtapa(supabase),
     getActividadReciente(supabase, 5),
-    getCotizaciones(supabase),
     getTodosLosSeguimientos(supabase),
   ]);
 
@@ -77,22 +70,12 @@ export default async function DashboardPage() {
     (c) => new Date(c.created_at) >= inicioSemana
   ).length;
 
-  const contarFiltroCotizacion = (filtro: FiltroCotizacion) =>
-    cotizaciones.filter((c) => coincideConFiltroCotizacion(c, filtro)).length;
-
-  const subFiltrosCotizacion = (
-    ["vencidas", "sin_respuesta", "seguimiento"] as FiltroCotizacion[]
-  )
-    .map((filtro) => ({ filtro, count: contarFiltroCotizacion(filtro) }))
-    .filter((f) => f.count > 0);
-
   const kpis: {
     label: string;
     value: number;
     sub: string;
     color: string;
     href: string;
-    subFiltros?: { filtro: FiltroCotizacion; count: number }[];
   }[] = [
     {
       label: "Prospectos activos",
@@ -103,11 +86,10 @@ export default async function DashboardPage() {
     },
     {
       label: "Cotizaciones abiertas",
-      value: contarFiltroCotizacion("pendientes"),
-      sub: "esperando respuesta — click para ver",
+      value: contarEtapa("cotizo"),
+      sub: "clientes esperando respuesta",
       color: ETAPA_META.cotizo.color,
-      href: "/cotizaciones?filtro=pendientes",
-      subFiltros: subFiltrosCotizacion,
+      href: "/clientes?etapa=cotizo",
     },
     {
       label: "Clientes que compraron",
@@ -164,47 +146,25 @@ export default async function DashboardPage() {
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {kpis.map((kpi) => (
-          <div
+          <Link
             key={kpi.label}
+            href={kpi.href}
             className="group rounded-[14px] border border-border bg-card p-5 transition-colors hover:border-[#2E2E2E]"
           >
-            <Link href={kpi.href} className="block">
-              <div className="mb-3 flex items-center justify-between text-[11px] tracking-wide text-[#444] uppercase">
-                <span>{kpi.label}</span>
-                <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                  →
-                </span>
-              </div>
-              <div
-                className="text-[32px] leading-none font-extrabold tracking-tight"
-                style={{ color: kpi.color }}
-              >
-                {kpi.value}
-              </div>
-              <div className="mt-1.5 text-xs text-[#444]">{kpi.sub}</div>
-            </Link>
-
-            {kpi.subFiltros && kpi.subFiltros.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
-                {kpi.subFiltros.map(({ filtro, count }) => {
-                  const meta = FILTRO_COTIZACION_META[filtro];
-                  return (
-                    <Link
-                      key={filtro}
-                      href={`/cotizaciones?filtro=${filtro}`}
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-opacity hover:opacity-80"
-                      style={{
-                        background: `${meta.color}22`,
-                        color: meta.color,
-                      }}
-                    >
-                      {count} {meta.label.split(" ")[0]}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+            <div className="mb-3 flex items-center justify-between text-[11px] tracking-wide text-[#444] uppercase">
+              <span>{kpi.label}</span>
+              <span className="opacity-0 transition-opacity group-hover:opacity-100">
+                →
+              </span>
+            </div>
+            <div
+              className="text-[32px] leading-none font-extrabold tracking-tight"
+              style={{ color: kpi.color }}
+            >
+              {kpi.value}
+            </div>
+            <div className="mt-1.5 text-xs text-[#444]">{kpi.sub}</div>
+          </Link>
         ))}
       </div>
 

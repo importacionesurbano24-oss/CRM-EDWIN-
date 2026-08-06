@@ -68,7 +68,9 @@ export async function actionRegistrarPedido(
     };
   }
 
-  // Dispara el recordatorio de seguimiento posventa a los N días.
+  // El pedido mueve al cliente a "Compró". Queda a mano de Edwin pasarlo a
+  // "Posventa" cuando de verdad haga ese seguimiento — el recordatorio de
+  // cuándo tocaría hacerlo ya queda programado desde ahora.
   const fechaRecordatorio = new Date(`${fecha_compra}T00:00:00`);
   fechaRecordatorio.setDate(
     fechaRecordatorio.getDate() + DIAS_RECORDATORIO_POSVENTA
@@ -76,7 +78,7 @@ export async function actionRegistrarPedido(
 
   await supabase.from("seguimientos").insert({
     cliente_id,
-    etapa: "posventa",
+    etapa: "compro",
     proxima_accion: "Preguntar cómo le quedó el pedido",
     proxima_accion_fecha: fechaRecordatorio.toISOString().slice(0, 10),
   });

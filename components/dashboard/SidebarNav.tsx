@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, Package } from "lucide-react";
+import { LayoutGrid, Users } from "lucide-react";
 
-// El módulo de Cotizaciones (link público con seguimiento en tiempo real)
-// sigue existiendo en /cotizaciones, pero se ocultó del menú porque Edwin
-// cotiza en otra herramienta y usa el link externo en "Registrar
-// seguimiento" en su lugar. No se borró el código ni los datos.
+// Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
+// /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
+// del cliente (incluida la compra) desde "Registrar seguimiento" en
+// /clientes/[id]. No se borró el código ni los datos.
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/pedidos", label: "Pedidos", icon: Package },
 ];
 
 export function SidebarNav() {

@@ -10,9 +10,11 @@ import {
 } from "@/lib/data/clientes";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { calcularUrgencia, esPendienteHoy } from "@/lib/ui/urgencia";
+import { generarAlertasBriefing } from "@/lib/services/briefing.service";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { NuevoClienteDialog } from "@/components/pipeline/NuevoClienteDialog";
+import { BriefingDelDia } from "@/components/dashboard/BriefingDelDia";
 
 function nombrePorDia() {
   const hoy = new Date();
@@ -55,6 +57,7 @@ export default async function DashboardPage() {
   ]);
 
   const nombreSaludo = user?.email?.split("@")[0] ?? "";
+  const alertasBriefing = generarAlertasBriefing(clientes);
 
   const tareasHoy = clientes
     .filter((c) => esPendienteHoy(c.proxima_accion_fecha))
@@ -143,6 +146,8 @@ export default async function DashboardPage() {
         </div>
         <NuevoClienteDialog />
       </div>
+
+      <BriefingDelDia alertas={alertasBriefing} />
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {kpis.map((kpi) => (

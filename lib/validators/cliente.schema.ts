@@ -29,6 +29,7 @@ export const NuevoClienteSchema = z.object({
   etapa: z.enum(ETAPAS),
   proxima_accion: z.string().trim().optional().or(z.literal("")),
   proxima_accion_fecha: z.string().trim().optional().or(z.literal("")),
+  notas: z.string().trim().optional().or(z.literal("")),
 });
 
 export type NuevoClienteInput = z.infer<typeof NuevoClienteSchema>;

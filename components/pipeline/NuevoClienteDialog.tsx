@@ -2,11 +2,12 @@
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { actionCrearCliente } from "@/app/actions/clientes.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
   SheetContent,
@@ -23,11 +24,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
+import type { Etapa } from "@/lib/types";
 
 export function NuevoClienteDialog() {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [etapa, setEtapa] = useState<Etapa>("prospecto");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function resetForm() {
+    setEtapa("prospecto");
+    setPreviewUrl(null);
+    formRef.current?.reset();
+  }
+
+  function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,7 +56,7 @@ export function NuevoClienteDialog() {
         toast.success(`${result.data.nombre} agregado.`);
         if (result.error) toast.error(result.error);
         setOpen(false);
-        formRef.current?.reset();
+        resetForm();
       } else {
         toast.error(result.error);
       }
@@ -48,7 +64,13 @@ export function NuevoClienteDialog() {
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) resetForm();
+      }}
+    >
       <SheetTrigger
         render={
           <Button className="gap-2">
@@ -109,14 +131,18 @@ export function NuevoClienteDialog() {
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="etapa">Etapa</Label>
-              <Select name="etapa" defaultValue="prospecto">
+              <input type="hidden" name="etapa" value={etapa} />
+              <Select
+                value={etapa}
+                onValueChange={(value) => setEtapa((value as Etapa) ?? "prospecto")}
+              >
                 <SelectTrigger id="etapa" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ETAPA_ORDEN.map((etapa) => (
-                    <SelectItem key={etapa} value={etapa}>
-                      {ETAPA_META[etapa].label}
+                  {ETAPA_ORDEN.map((opcion) => (
+                    <SelectItem key={opcion} value={opcion}>
+                      {ETAPA_META[opcion].label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -141,6 +167,63 @@ export function NuevoClienteDialog() {
               />
             </div>
           </div>
+
+          {etapa === "compro" && (
+            <div className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-[#141414] p-3.5">
+              <div className="col-span-2 flex flex-col gap-2">
+                <Label htmlFor="foto_pedido">Foto del pedido (opcional)</Label>
+                <input
+                  ref={fileInputRef}
+                  id="foto_pedido"
+                  name="foto_pedido"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFotoChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex h-28 items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#2A2A2A] bg-[#111] transition-colors hover:border-[#3A3A3A]"
+                >
+                  {previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={previewUrl}
+                      alt="Vista previa"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex flex-col items-center gap-1.5 text-xs text-[#555]">
+                      <Upload className="size-4" />
+                      Toca para subir una foto
+                    </span>
+                  )}
+                </button>
+              </div>
+              <div className="col-span-2 flex flex-col gap-2">
+                <Label htmlFor="monto_pedido">Monto del pedido</Label>
+                <Input
+                  id="monto_pedido"
+                  name="monto_pedido"
+                  type="number"
+                  min="0"
+                  placeholder="2000000"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="notas">Observaciones (opcional)</Label>
+            <Textarea
+              id="notas"
+              name="notas"
+              placeholder="Algo más para tener en cuenta de este cliente..."
+              rows={3}
+            />
+          </div>
+
           <SheetFooter>
             <Button type="submit" disabled={pending}>
               {pending ? "Guardando..." : "Guardar cliente"}

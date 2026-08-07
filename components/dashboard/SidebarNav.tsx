@@ -9,7 +9,7 @@ import { LayoutGrid, Users, BarChart3, ListChecks } from "lucide-react";
 // del cliente (incluida la compra) desde "Registrar seguimiento" en
 // /clientes/[id]. No se borró el código ni los datos.
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+  { href: "/dashboard", label: "Inicio", icon: LayoutGrid },
   { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },

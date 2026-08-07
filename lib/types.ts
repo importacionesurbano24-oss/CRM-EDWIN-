@@ -19,6 +19,8 @@ export type Origen = "walk-in" | "referido" | "otro";
 
 export type EstadoCotizacion = "enviada" | "vista" | "aceptada" | "vencida";
 
+export type RolChat = "user" | "assistant";
+
 export interface ProductoItem {
   nombre: string;
   cantidad: number;
@@ -205,6 +207,62 @@ export interface Database {
           },
         ];
       };
+      chat_agente: {
+        Row: {
+          id: string;
+          user_id: string;
+          cliente_id: string | null;
+          rol: RolChat;
+          mensaje: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          cliente_id?: string | null;
+          rol: RolChat;
+          mensaje: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cliente_id?: string | null;
+          rol?: RolChat;
+          mensaje?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_agente_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      info_negocio: {
+        Row: {
+          id: string;
+          user_id: string;
+          contenido: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          contenido?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          contenido?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       clientes_con_etapa: {
@@ -239,3 +297,5 @@ export type Cotizacion = Database["public"]["Tables"]["cotizaciones"]["Row"];
 export type Pedido = Database["public"]["Tables"]["pedidos"]["Row"];
 export type ClienteConEtapa =
   Database["public"]["Views"]["clientes_con_etapa"]["Row"];
+export type MensajeChat = Database["public"]["Tables"]["chat_agente"]["Row"];
+export type InfoNegocio = Database["public"]["Tables"]["info_negocio"]["Row"];

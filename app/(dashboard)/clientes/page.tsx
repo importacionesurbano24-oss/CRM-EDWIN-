@@ -37,5 +37,11 @@ export default async function ClientesPage({
       coincideRangoFecha(c.proxima_accion_fecha, rangoFecha, desde, hasta)
     );
 
-  return <ClientesView clientes={clientes} filtroEtapas={filtroEtapas} />;
+  return (
+    <ClientesView
+      key={filtroEtapas.join(",")}
+      clientes={clientes}
+      filtroEtapas={filtroEtapas}
+    />
+  );
 }

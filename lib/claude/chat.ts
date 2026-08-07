@@ -1,0 +1,62 @@
+import "server-only";
+import Anthropic from "@anthropic-ai/sdk";
+
+// Prompt base compartido por los dos chats (cliente y negocio). Cada
+// llamada le agrega su propio bloque de contexto (ver
+// lib/services/chatContexto.service.ts) más el contenido de info_negocio.
+const SYSTEM_PROMPT_BASE = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Hablas con Edwin, el vendedor y dueño del negocio, por chat.
+
+Tono: cercano, tuteando, sin tecnicismos ni lenguaje corporativo — como hablaría un vendedor de confianza. Cuando te pida un mensaje para un cliente, usa técnicas de neuroventas y urgencia suave, nunca presionando ni siendo agresivo.
+
+Reglas estrictas:
+- Nunca inventes precios, fechas, productos ni datos que no estén explícitamente en el contexto que te paso.
+- Si te preguntan algo de catálogo, garantías u objeciones y no está en la información del negocio que te paso, dilo honestamente en vez de inventar.
+- Responde en español, de forma directa y breve — esto es un chat, no un informe.`;
+
+export interface MensajeConversacion {
+  rol: "user" | "assistant";
+  mensaje: string;
+}
+
+let cachedClient: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (!cachedClient) cachedClient = new Anthropic();
+  return cachedClient;
+}
+
+/**
+ * Responde un turno de chat. `contextoEspecifico` es el bloque de cliente o
+ * de negocio ya armado (lib/services/chatContexto.service.ts); `infoNegocio`
+ * es el contenido editable de la tabla info_negocio, o null si Edwin
+ * todavía no lo llenó.
+ */
+export async function responderChat(
+  historial: MensajeConversacion[],
+  contextoEspecifico: string,
+  infoNegocio: string | null
+): Promise<string> {
+  const system = [
+    SYSTEM_PROMPT_BASE,
+    "",
+    contextoEspecifico,
+    ...(infoNegocio
+      ? ["", "Información del negocio (catálogo, garantías, objeciones):", infoNegocio]
+      : []),
+  ].join("\n");
+
+  const response = await getClient().messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 1024,
+    thinking: { type: "disabled" },
+    system,
+    messages: historial.map((m) => ({ role: m.rol, content: m.mensaje })),
+  });
+
+  const bloqueTexto = response.content.find(
+    (bloque): bloque is Anthropic.TextBlock => bloque.type === "text"
+  );
+  if (!bloqueTexto) {
+    throw new Error("El agente no devolvió una respuesta de texto.");
+  }
+  return bloqueTexto.text;
+}

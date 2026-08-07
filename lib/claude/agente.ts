@@ -69,7 +69,7 @@ export async function sugerirProximaAccion(
   return response.parsed_output;
 }
 
-function formatearContexto(ctx: ContextoCliente): string {
+export function formatearContexto(ctx: ContextoCliente): string {
   const { cliente, historial, cotizaciones, pedidos, cotizacionExterna } = ctx;
   const lineas: string[] = [];
 

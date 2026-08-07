@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -48,8 +48,8 @@ export function NuevoClienteDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
         render={
           <Button className="gap-2">
             <Plus className="size-3.5" />
@@ -57,14 +57,14 @@ export function NuevoClienteDialog() {
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nuevo cliente</DialogTitle>
-        </DialogHeader>
+      <SheetContent className="sm:max-w-lg">
+        <SheetHeader>
+          <SheetTitle>Nuevo cliente</SheetTitle>
+        </SheetHeader>
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
+          className="flex flex-1 flex-col gap-5"
         >
           <div className="flex flex-col gap-2">
             <Label htmlFor="nombre">Nombre</Label>
@@ -141,13 +141,13 @@ export function NuevoClienteDialog() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <SheetFooter>
             <Button type="submit" disabled={pending}>
               {pending ? "Guardando..." : "Guardar cliente"}
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

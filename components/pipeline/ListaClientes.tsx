@@ -3,6 +3,7 @@ import type { ClienteConEtapa } from "@/lib/types";
 import { calcularUrgencia } from "@/lib/ui/urgencia";
 import { ClienteAvatar } from "./ClienteAvatar";
 import { EtapaBadge } from "./EtapaBadge";
+import { BotonMensajeIA } from "./BotonMensajeIA";
 import {
   Table,
   TableBody,
@@ -59,12 +60,20 @@ export function ListaClientes({ clientes }: { clientes: ClienteConEtapa[] }) {
                   {urgencia.label}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link
-                    href={`/clientes/${cliente.id}`}
-                    className="text-xs text-[#888] hover:text-foreground"
-                  >
-                    Ver →
-                  </Link>
+                  <div className="flex items-center justify-end gap-2.5">
+                    {cliente.etapa === "cotizo" && (
+                      <BotonMensajeIA
+                        clienteId={cliente.id}
+                        clienteNombre={cliente.nombre}
+                      />
+                    )}
+                    <Link
+                      href={`/clientes/${cliente.id}`}
+                      className="text-xs text-[#888] hover:text-foreground"
+                    >
+                      Ver →
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             );

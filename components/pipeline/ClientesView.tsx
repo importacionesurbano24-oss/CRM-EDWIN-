@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import type { ClienteConEtapa, Etapa } from "@/lib/types";
 import { ETAPA_META } from "@/lib/ui/etapa";
-import { KanbanBoard } from "./KanbanBoard";
+import { EtapasGrid } from "./EtapasGrid";
 import { ListaClientes } from "./ListaClientes";
 import { NuevoClienteDialog } from "./NuevoClienteDialog";
 import { FiltroFecha } from "./FiltroFecha";
@@ -19,8 +19,8 @@ export function ClientesView({
   filtroEtapas?: Etapa[];
 }) {
   const hayFiltro = filtroEtapas.length > 0;
-  const [vista, setVista] = useState<"kanban" | "lista">(
-    hayFiltro ? "lista" : "kanban"
+  const [vista, setVista] = useState<"etapas" | "lista">(
+    hayFiltro ? "lista" : "etapas"
   );
 
   const pathname = usePathname();
@@ -48,14 +48,14 @@ export function ClientesView({
           <div className="flex gap-0.5 rounded-lg border border-border bg-card p-1">
             <button
               type="button"
-              onClick={() => setVista("kanban")}
+              onClick={() => setVista("etapas")}
               className={`rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-                vista === "kanban"
+                vista === "etapas"
                   ? "bg-[#222] text-[#F0F0F0]"
                   : "text-[#444] hover:text-[#888]"
               }`}
             >
-              Kanban
+              Etapas
             </button>
             <button
               type="button"
@@ -91,8 +91,8 @@ export function ClientesView({
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden pt-5">
-        {vista === "kanban" ? (
-          <KanbanBoard clientes={clientes} />
+        {vista === "etapas" ? (
+          <EtapasGrid clientes={clientes} />
         ) : (
           <ListaClientes clientes={clientes} />
         )}

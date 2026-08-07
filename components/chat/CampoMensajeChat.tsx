@@ -7,12 +7,10 @@ export function CampoMensajeChat({
   onEnviar,
   pending,
   placeholder = "Escribe tu pregunta...",
-  onFocus,
 }: {
   onEnviar: (mensaje: string) => void;
   pending: boolean;
   placeholder?: string;
-  onFocus?: () => void;
 }) {
   const [valor, setValor] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -49,7 +47,6 @@ export function CampoMensajeChat({
           ajustarAltura();
         }}
         onKeyDown={handleKeyDown}
-        onFocus={onFocus}
         placeholder={placeholder}
         disabled={pending}
         rows={1}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { X, Sparkles } from "lucide-react";
 import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
@@ -11,8 +12,10 @@ import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
 
 /**
  * UI y estado compartidos por los dos chats (ficha de cliente y negocio).
- * Empieza como tarjeta chica embebida; al enfocar el campo de texto o pedir
- * la acción extra, se expande a pantalla completa estilo ChatGPT.
+ * Empieza como tarjeta chica embebida; se expande a pantalla completa
+ * estilo ChatGPT recién cuando se envía el primer mensaje (no al enfocar
+ * el campo). Si `alCerrarIrA` viene definido, cerrar el chat expandido
+ * navega ahí en vez de solo volver a la tarjeta chica.
  */
 export function PanelChat({
   clienteId,
@@ -21,6 +24,7 @@ export function PanelChat({
   mensajeVacio,
   historialInicial,
   accionExtra,
+  alCerrarIrA,
 }: {
   clienteId: string | null;
   titulo: string;
@@ -28,12 +32,20 @@ export function PanelChat({
   mensajeVacio: string;
   historialInicial: MensajeChat[];
   accionExtra?: { label: string; mensaje: string };
+  alCerrarIrA?: string;
 }) {
+  const router = useRouter();
   const [mensajes, setMensajes] = useState(historialInicial);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
 
+  function cerrar() {
+    setExpandido(false);
+    if (alCerrarIrA) router.push(alCerrarIrA);
+  }
+
   async function enviar(mensaje: string) {
+    setExpandido(true);
     setPending(true);
     setMensajes((prev) => [
       ...prev,
@@ -75,7 +87,7 @@ export function PanelChat({
           <h2 className="text-sm font-semibold text-[#F0F0F0]">{titulo}</h2>
           <button
             type="button"
-            onClick={() => setExpandido(false)}
+            onClick={cerrar}
             className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
           >
             <X className="size-4" />
@@ -120,10 +132,7 @@ export function PanelChat({
             variant="outline"
             size="sm"
             disabled={pending}
-            onClick={() => {
-              setExpandido(true);
-              enviar(accionExtra.mensaje);
-            }}
+            onClick={() => enviar(accionExtra.mensaje)}
             className="gap-1.5"
           >
             <Sparkles className="size-3.5" />
@@ -136,12 +145,7 @@ export function PanelChat({
         {listaMensajes}
       </div>
 
-      <CampoMensajeChat
-        onEnviar={enviar}
-        pending={pending}
-        placeholder={placeholder}
-        onFocus={() => setExpandido(true)}
-      />
+      <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
     </div>
   );
 }

@@ -23,6 +23,7 @@ export function ChatAgente({
         label: "Sugerir próxima acción",
         mensaje: "¿Qué debería hacer ahora con este cliente?",
       }}
+      alCerrarIrA="/dashboard"
     />
   );
 }

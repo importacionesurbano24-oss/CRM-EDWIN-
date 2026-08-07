@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users } from "lucide-react";
+import { LayoutGrid, Users, BarChart3 } from "lucide-react";
 
 // Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
@@ -11,6 +11,7 @@ import { LayoutGrid, Users } from "lucide-react";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];
 
 export function SidebarNav() {

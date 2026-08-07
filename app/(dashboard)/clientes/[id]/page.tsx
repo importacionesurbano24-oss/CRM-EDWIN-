@@ -6,11 +6,12 @@ import {
   getClienteConEtapa,
   getHistorialCliente,
 } from "@/lib/data/clientes";
+import { getHistorialChat } from "@/lib/data/chat";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimientoForm";
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
-import { SugerenciaAgente } from "@/components/pipeline/SugerenciaAgente";
+import { ChatAgente } from "@/components/pipeline/ChatAgente";
 
 const ORIGEN_LABEL: Record<string, string> = {
   "walk-in": "Llegó a la tienda",
@@ -30,6 +31,7 @@ export default async function ClienteDetallePage({
   if (!cliente) notFound();
 
   const historial = await getHistorialCliente(supabase, id);
+  const historialChat = await getHistorialChat(supabase, id);
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
@@ -57,7 +59,11 @@ export default async function ClienteDetallePage({
       </div>
 
       <div className="mb-6">
-        <SugerenciaAgente clienteId={cliente.id} />
+        <ChatAgente
+          clienteId={cliente.id}
+          clienteNombre={cliente.nombre}
+          historialInicial={historialChat}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">

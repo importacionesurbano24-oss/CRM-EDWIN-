@@ -13,9 +13,11 @@ import { FiltroFecha } from "./FiltroFecha";
 
 export function ClientesView({
   clientes,
+  clientesParaConteoFecha,
   filtroEtapas = [],
 }: {
   clientes: ClienteConEtapa[];
+  clientesParaConteoFecha?: ClienteConEtapa[];
   filtroEtapas?: Etapa[];
 }) {
   const hayFiltro = filtroEtapas.length > 0;
@@ -74,7 +76,7 @@ export function ClientesView({
       </div>
 
       <div className="pt-4">
-        <FiltroFecha />
+        <FiltroFecha clientes={clientesParaConteoFecha ?? clientes} />
       </div>
 
       {hayFiltro && (

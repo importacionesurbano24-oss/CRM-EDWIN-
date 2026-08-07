@@ -11,6 +11,8 @@ import {
 } from "@/lib/data/clientes";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { esPendienteHoy } from "@/lib/ui/urgencia";
+import { getHistorialChat } from "@/lib/data/chat";
+import { ChatNegocio } from "@/components/dashboard/ChatNegocio";
 
 function nombrePorDia() {
   const hoy = new Date();
@@ -46,10 +48,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [clientes, actividad, seguimientos] = await Promise.all([
+  const [clientes, actividad, seguimientos, historialChat] = await Promise.all([
     getClientesConEtapa(supabase),
     getActividadReciente(supabase, 5),
     getTodosLosSeguimientos(supabase),
+    getHistorialChat(supabase, null),
   ]);
 
   const nombreSaludo = user?.email?.split("@")[0] ?? "";
@@ -169,6 +172,8 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      <ChatNegocio historialInicial={historialChat} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-[14px] border border-border bg-card p-5">

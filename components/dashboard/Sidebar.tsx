@@ -36,7 +36,10 @@ export function Sidebar({ pendientesHoy, userEmail }: SidebarProps) {
         <div className="px-2 pb-2 text-[10px] tracking-wide text-[#333] uppercase">
           Hoy
         </div>
-        <div className="flex items-center gap-2 rounded-lg bg-[#1A1A1A] px-3 py-2.5">
+        <Link
+          href="/tareas"
+          className="flex items-center gap-2 rounded-lg bg-[#1A1A1A] px-3 py-2.5 transition-colors hover:bg-[#222]"
+        >
           <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-brand-lime" />
           <div>
             <div className="text-[11px] text-[#888]">Pendientes hoy</div>
@@ -44,7 +47,7 @@ export function Sidebar({ pendientesHoy, userEmail }: SidebarProps) {
               {pendientesHoy}
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="flex items-center gap-2.5 border-t border-sidebar-border px-5 py-4">

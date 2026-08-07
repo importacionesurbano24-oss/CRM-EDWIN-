@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, BarChart3 } from "lucide-react";
+import { LayoutGrid, Users, BarChart3, ListChecks } from "lucide-react";
 
 // Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
@@ -10,6 +10,7 @@ import { LayoutGrid, Users, BarChart3 } from "lucide-react";
 // /clientes/[id]. No se borró el código ni los datos.
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+  { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
 ];

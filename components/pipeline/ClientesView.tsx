@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import type { ClienteConEtapa, Etapa } from "@/lib/types";
 import { ETAPA_META } from "@/lib/ui/etapa";
 import { KanbanBoard } from "./KanbanBoard";
 import { ListaClientes } from "./ListaClientes";
 import { NuevoClienteDialog } from "./NuevoClienteDialog";
+import { FiltroFecha } from "./FiltroFecha";
 
 export function ClientesView({
   clientes,
@@ -20,6 +22,15 @@ export function ClientesView({
   const [vista, setVista] = useState<"kanban" | "lista">(
     hayFiltro ? "lista" : "kanban"
   );
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const hrefSinEtapa = (() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("etapa");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  })();
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -62,10 +73,14 @@ export function ClientesView({
         </div>
       </div>
 
+      <div className="pt-4">
+        <FiltroFecha />
+      </div>
+
       {hayFiltro && (
-        <div className="px-4 pt-4 md:px-9">
+        <div className="px-4 pt-3 md:px-9">
           <Link
-            href="/clientes"
+            href={hrefSinEtapa}
             className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
           >
             Filtro:{" "}

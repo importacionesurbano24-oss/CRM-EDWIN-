@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getClientesConEtapa } from "@/lib/data/clientes";
 import { ClientesView } from "@/components/pipeline/ClientesView";
+import { coincideRangoFecha, esRangoFechaValido } from "@/lib/ui/rangoFecha";
 import type { Etapa } from "@/lib/types";
 
 const ETAPAS_VALIDAS: Etapa[] = [
@@ -14,22 +15,27 @@ const ETAPAS_VALIDAS: Etapa[] = [
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ etapa?: string }>;
+  searchParams: Promise<{
+    etapa?: string;
+    rango?: string;
+    desde?: string;
+    hasta?: string;
+  }>;
 }) {
-  const { etapa } = await searchParams;
+  const { etapa, rango, desde, hasta } = await searchParams;
   const filtroEtapas = (etapa?.split(",") ?? []).filter((e): e is Etapa =>
     ETAPAS_VALIDAS.includes(e as Etapa)
   );
+  const rangoFecha = esRangoFechaValido(rango) ? rango : "todos";
 
   const supabase = await createClient();
   const todosLosClientes = await getClientesConEtapa(supabase);
 
-  const clientes =
-    filtroEtapas.length > 0
-      ? todosLosClientes.filter(
-          (c) => c.etapa && filtroEtapas.includes(c.etapa)
-        )
-      : todosLosClientes;
+  const clientes = todosLosClientes
+    .filter((c) => filtroEtapas.length === 0 || (c.etapa && filtroEtapas.includes(c.etapa)))
+    .filter((c) =>
+      coincideRangoFecha(c.proxima_accion_fecha, rangoFecha, desde, hasta)
+    );
 
   return <ClientesView clientes={clientes} filtroEtapas={filtroEtapas} />;
 }

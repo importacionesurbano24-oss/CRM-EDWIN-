@@ -98,4 +98,16 @@
   html {
     @apply font-sans;
   }
+  /* El autocompletado del navegador (Chrome/Edge) pinta su propio fondo
+     claro y texto negro sobre los inputs — invisible en este tema oscuro
+     si no se sobreescribe. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--foreground);
+    -webkit-box-shadow: 0 0 0px 1000px var(--input) inset;
+    box-shadow: 0 0 0px 1000px var(--input) inset;
+    caret-color: var(--foreground);
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }

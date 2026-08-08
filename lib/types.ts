@@ -21,6 +21,8 @@ export type EstadoCotizacion = "enviada" | "vista" | "aceptada" | "vencida";
 
 export type RolChat = "user" | "assistant";
 
+export type DireccionMensaje = "entrante" | "saliente";
+
 export interface ProductoItem {
   nombre: string;
   cantidad: number;
@@ -242,6 +244,47 @@ export interface Database {
           },
         ];
       };
+      mensajes_whatsapp: {
+        Row: {
+          id: string;
+          user_id: string;
+          cliente_id: string;
+          direccion: DireccionMensaje;
+          contenido: string;
+          generado_por_agente: boolean;
+          whatsapp_message_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          cliente_id: string;
+          direccion: DireccionMensaje;
+          contenido: string;
+          generado_por_agente?: boolean;
+          whatsapp_message_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cliente_id?: string;
+          direccion?: DireccionMensaje;
+          contenido?: string;
+          generado_por_agente?: boolean;
+          whatsapp_message_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mensajes_whatsapp_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       info_negocio: {
         Row: {
           id: string;
@@ -299,3 +342,5 @@ export type ClienteConEtapa =
   Database["public"]["Views"]["clientes_con_etapa"]["Row"];
 export type MensajeChat = Database["public"]["Tables"]["chat_agente"]["Row"];
 export type InfoNegocio = Database["public"]["Tables"]["info_negocio"]["Row"];
+export type MensajeWhatsapp =
+  Database["public"]["Tables"]["mensajes_whatsapp"]["Row"];

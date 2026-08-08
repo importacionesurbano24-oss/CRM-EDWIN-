@@ -7,8 +7,10 @@
 
 import { differenceInCalendarDays, addDays, formatISO } from "date-fns";
 import type { ClienteConEtapa, Etapa } from "@/lib/types";
+import type { UltimoMensajeWhatsapp } from "@/lib/data/whatsapp";
 
 export type ReglaBriefing =
+  | "whatsapp_sin_responder"
   | "cotizo_frio"
   | "cotizo_seguimiento"
   | "compro_posventa"
@@ -40,14 +42,38 @@ function diasEnEtapa(cliente: ClienteConEtapa): number {
  * Una alerta por cliente como máximo, con la regla más específica y urgente
  * primero. Un cliente que califica para varias reglas (ej. cotizó hace 8
  * días también pasa el umbral genérico de "sin acción") solo recibe la más
- * relevante para no duplicar tarjetas en el panel.
+ * relevante para no duplicar tarjetas en el panel. Un mensaje de WhatsApp
+ * sin responder es la más urgente de todas — si aplica, gana sobre
+ * cualquier otra regla para ese cliente.
  */
 export function generarAlertasBriefing(
-  clientes: ClienteConEtapa[]
+  clientes: ClienteConEtapa[],
+  ultimosMensajesWhatsapp: UltimoMensajeWhatsapp[] = []
 ): AlertaBriefing[] {
   const alertas: AlertaBriefing[] = [];
+  const etapaPorCliente = new Map(
+    clientes.map((c) => [c.id, c.etapa ?? "prospecto"])
+  );
+
+  for (const mensaje of ultimosMensajesWhatsapp) {
+    if (mensaje.direccion !== "entrante") continue;
+    const etapaActual = etapaPorCliente.get(mensaje.clienteId);
+    if (!etapaActual) continue;
+
+    alertas.push({
+      clienteId: mensaje.clienteId,
+      clienteNombre: mensaje.clienteNombre,
+      etapaActual,
+      etapaSugerida: null,
+      dias: differenceInCalendarDays(new Date(), new Date(mensaje.createdAt)),
+      regla: "whatsapp_sin_responder",
+    });
+  }
+
+  const yaTieneAlertaWhatsapp = new Set(alertas.map((a) => a.clienteId));
 
   for (const cliente of clientes) {
+    if (yaTieneAlertaWhatsapp.has(cliente.id)) continue;
     const etapa = cliente.etapa ?? "prospecto";
     const dias = diasEnEtapa(cliente);
     const base = { clienteId: cliente.id, clienteNombre: cliente.nombre, etapaActual: etapa, dias };
@@ -66,11 +92,12 @@ export function generarAlertasBriefing(
   }
 
   const prioridad: Record<ReglaBriefing, number> = {
-    compro_posventa: 0,
-    posventa_referido: 1,
-    cotizo_frio: 2,
-    cotizo_seguimiento: 3,
-    sin_accion: 4,
+    whatsapp_sin_responder: 0,
+    compro_posventa: 1,
+    posventa_referido: 2,
+    cotizo_frio: 3,
+    cotizo_seguimiento: 4,
+    sin_accion: 5,
   };
   return alertas.sort(
     (a, b) => prioridad[a.regla] - prioridad[b.regla] || b.dias - a.dias
@@ -83,6 +110,11 @@ export function textoPlantilla(alerta: AlertaBriefing): {
   accionSugerida: string;
 } {
   switch (alerta.regla) {
+    case "whatsapp_sin_responder":
+      return {
+        situacion: `${alerta.clienteNombre} te escribió por WhatsApp hace ${alerta.dias} día(s) y no le has respondido.`,
+        accionSugerida: "Responderle por WhatsApp.",
+      };
     case "compro_posventa":
       return {
         situacion: `${alerta.clienteNombre} compró hace ${alerta.dias} días.`,
@@ -127,6 +159,13 @@ export function construirSeguimientoParaEjecutar(alerta: AlertaBriefing): {
   const notas = "Generado desde el Daily Briefing.";
 
   switch (alerta.regla) {
+    case "whatsapp_sin_responder":
+      return {
+        etapa: alerta.etapaActual,
+        proxima_accion: "Responder por WhatsApp",
+        proxima_accion_fecha: hoy,
+        notas,
+      };
     case "compro_posventa":
       return {
         etapa: "posventa",

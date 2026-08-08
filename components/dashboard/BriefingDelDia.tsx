@@ -15,6 +15,7 @@ import { ETAPA_META } from "@/lib/ui/etapa";
 import { Button } from "@/components/ui/button";
 
 const COLOR_REGLA: Record<AlertaBriefing["regla"], string> = {
+  whatsapp_sin_responder: "#25D366",
   cotizo_frio: "#FF6B6B",
   posventa_referido: "#FF9F43",
   compro_posventa: "#CCFF00",

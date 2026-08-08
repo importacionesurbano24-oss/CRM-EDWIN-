@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getClientesConEtapa } from "@/lib/data/clientes";
+import { getUltimosMensajesPorCliente } from "@/lib/data/whatsapp";
 import { esPendienteHoy } from "@/lib/ui/urgencia";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -16,10 +17,18 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const clientes = await getClientesConEtapa(supabase);
-  const pendientesHoy = clientes.filter((c) =>
-    esPendienteHoy(c.proxima_accion_fecha)
+  const [clientes, ultimosMensajesWhatsapp] = await Promise.all([
+    getClientesConEtapa(supabase),
+    getUltimosMensajesPorCliente(supabase),
+  ]);
+
+  const mensajesSinResponder = ultimosMensajesWhatsapp.filter(
+    (m) => m.direccion === "entrante"
   ).length;
+
+  const pendientesHoy =
+    clientes.filter((c) => esPendienteHoy(c.proxima_accion_fecha)).length +
+    mensajesSinResponder;
 
   return (
     <DashboardShell

@@ -8,6 +8,7 @@ import type { AlertaBriefing } from "@/lib/services/briefing.service";
 const SYSTEM_PROMPT = `Eres el asistente que arma el resumen matutino ("Daily Briefing") de PasoCRM para Dormiluna, una tienda de colchones en Colombia. Cada mañana Edwin (el vendedor) revisa esta lista antes de empezar a llamar clientes.
 
 Te paso una lista de clientes que YA fueron marcados por reglas de negocio fijas (no las inventas tú, ya vienen decididas):
+- whatsapp_sin_responder: te escribió por WhatsApp y todavía no le has respondido.
 - compro_posventa: compró hace más de 30 días sin pasar a Posventa.
 - posventa_referido: lleva más de 15 días en Posventa sin pedirle referido.
 - cotizo_frio: lleva más de 5 días en Cotizó sin respuesta — riesgo de perderlo.

@@ -2,19 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getHistorialChat, getInfoNegocio } from "@/lib/data/chat";
+import { getHistorialChat } from "@/lib/data/chat";
 import { getClienteConEtapa, getHistorialCliente, getClientesConEtapa } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
 import { getPedidosReporte } from "@/lib/data/reportes";
 import { responderChat, type MensajeConversacion } from "@/lib/claude/chat";
+import { buscarConocimientoRelevante } from "@/lib/services/conocimiento.service";
 import {
   construirContextoCliente,
   construirContextoNegocio,
 } from "@/lib/services/chatContexto.service";
-import { EnviarMensajeSchema, GuardarInfoNegocioSchema } from "@/lib/validators/chat.schema";
+import { EnviarMensajeSchema } from "@/lib/validators/chat.schema";
 import type { ActionResult } from "@/lib/action-result";
-import type { MensajeChat, InfoNegocio } from "@/lib/types";
+import type { MensajeChat } from "@/lib/types";
 
 export async function actionEnviarMensajeChat(
   clienteId: string | null,
@@ -28,7 +29,7 @@ export async function actionEnviarMensajeChat(
   const supabase = await createClient();
 
   const historialPrevio = await getHistorialChat(supabase, parsed.data.clienteId);
-  const infoNegocio = await getInfoNegocio(supabase);
+  const fragmentos = await buscarConocimientoRelevante(supabase, parsed.data.mensaje);
 
   const { data: mensajeUsuario, error: errorInsert } = await supabase
     .from("chat_agente")
@@ -83,7 +84,7 @@ export async function actionEnviarMensajeChat(
     const respuesta = await responderChat(
       historialCompleto,
       contextoEspecifico,
-      infoNegocio?.contenido || null
+      fragmentos
     );
 
     const { data: mensajeAsistente, error: errorAsistente } = await supabase
@@ -117,45 +118,4 @@ export async function actionEnviarMensajeChat(
       error: error instanceof Error ? error.message : "No se pudo generar la respuesta.",
     };
   }
-}
-
-export async function actionGuardarInfoNegocio(
-  formData: FormData
-): Promise<ActionResult<InfoNegocio>> {
-  const parsed = GuardarInfoNegocioSchema.safeParse({
-    contenido: formData.get("contenido"),
-  });
-
-  if (!parsed.success) {
-    return { data: null, error: parsed.error.issues[0].message };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { data: null, error: "No autenticado." };
-  }
-
-  const { data, error } = await supabase
-    .from("info_negocio")
-    .upsert(
-      {
-        user_id: user.id,
-        contenido: parsed.data.contenido,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    )
-    .select()
-    .single();
-
-  if (error || !data) {
-    return { data: null, error: error?.message ?? "No se pudo guardar." };
-  }
-
-  revalidatePath("/configuracion");
-  return { data, error: null };
 }

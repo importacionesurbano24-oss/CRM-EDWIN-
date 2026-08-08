@@ -107,6 +107,10 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN=      # cadena que tú inventas, se configura igua
 # Claude API — console.anthropic.com
 ANTHROPIC_API_KEY=
 
+# Voyage AI — voyageai.com (embeddings para la búsqueda semántica de
+# /conocimiento; la API de Claude no genera embeddings)
+VOYAGE_API_KEY=
+
 # Resend — resend.com/api-keys
 RESEND_API_KEY=
 
@@ -163,6 +167,7 @@ RLS activado en todas las tablas, filtrando por `auth.uid()` del usuario dueño 
 | Supabase | DB, Auth, Storage, Realtime | SDK oficial `@supabase/supabase-js` + `@supabase/ssr` |
 | WhatsApp Cloud API (Meta) | Recibir/enviar mensajes | Webhook en `app/api/whatsapp/webhook/route.ts` + fetch directo a Graph API para enviar |
 | Claude API (Anthropic) | Agente: sugiere próxima acción, redacta mensajes | SDK oficial `@anthropic-ai/sdk`, contexto = historial del cliente + etapa |
+| Voyage AI | Embeddings para la base de conocimiento (`/conocimiento`), búsqueda semántica con pgvector | `fetch` directo a su API REST, sin SDK — Claude no genera embeddings |
 | Resend | Notificaciones internas por email | SDK oficial `resend` |
 
 ## 📈 Contexto de escala

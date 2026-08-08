@@ -7,6 +7,7 @@ import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
 import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { sugerirRespuestaWhatsapp } from "@/lib/claude/whatsapp";
+import { buscarConocimientoRelevante } from "@/lib/services/conocimiento.service";
 import type { ActionResult } from "@/lib/action-result";
 import type { MensajeWhatsapp } from "@/lib/types";
 
@@ -27,6 +28,11 @@ export async function actionSugerirRespuestaWhatsapp(
     return { data: null, error: "Cliente no encontrado." };
   }
 
+  const ultimoEntrante = [...hilo].reverse().find((m) => m.direccion === "entrante");
+  const fragmentos = ultimoEntrante
+    ? await buscarConocimientoRelevante(supabase, ultimoEntrante.contenido)
+    : [];
+
   try {
     const sugerencia = await sugerirRespuestaWhatsapp(
       {
@@ -35,7 +41,8 @@ export async function actionSugerirRespuestaWhatsapp(
         cotizaciones: cotizaciones.filter((c) => c.cliente_id === clienteId),
         pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
       },
-      hilo
+      hilo,
+      fragmentos
     );
     return { data: sugerencia, error: null };
   } catch (error) {

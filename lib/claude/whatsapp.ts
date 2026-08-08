@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import type { MensajeWhatsapp } from "@/lib/types";
 import { formatearContexto, type ContextoCliente } from "@/lib/claude/agente";
+import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 
 // Mismo criterio que lib/claude/chat.ts y lib/claude/agente.ts: prompt
 // como constante (no variable de entorno), claude-sonnet-5,
@@ -24,7 +25,8 @@ function getClient(): Anthropic {
 
 export async function sugerirRespuestaWhatsapp(
   contextoCliente: ContextoCliente,
-  hilo: Pick<MensajeWhatsapp, "direccion" | "contenido" | "created_at">[]
+  hilo: Pick<MensajeWhatsapp, "direccion" | "contenido" | "created_at">[],
+  fragmentos: FragmentoConocimiento[] = []
 ): Promise<string> {
   const contextoTexto = formatearContexto(contextoCliente);
 
@@ -36,6 +38,13 @@ export async function sugerirRespuestaWhatsapp(
 
   const mensajeUsuario = [
     contextoTexto,
+    ...(fragmentos.length
+      ? [
+          "",
+          "Información relevante del negocio (catálogo, garantías, objeciones, etc.):",
+          ...fragmentos.map((f) => `[${f.seccion}] ${f.contenido}`),
+        ]
+      : []),
     "",
     "Conversación de WhatsApp (más reciente al final):",
     ...(lineasHilo.length ? lineasHilo : ["- Sin mensajes todavía."]),

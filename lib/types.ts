@@ -23,6 +23,16 @@ export type RolChat = "user" | "assistant";
 
 export type DireccionMensaje = "entrante" | "saliente";
 
+export type SeccionConocimiento =
+  | "catalogo"
+  | "objeciones"
+  | "preguntas_frecuentes"
+  | "garantias"
+  | "tono"
+  | "proceso_venta"
+  | "promociones"
+  | "datos_empresa";
+
 export interface ProductoItem {
   nombre: string;
   cantidad: number;
@@ -306,6 +316,39 @@ export interface Database {
         };
         Relationships: [];
       };
+      conocimiento_negocio: {
+        Row: {
+          id: string;
+          user_id: string;
+          seccion: SeccionConocimiento;
+          contenido: string;
+          // Texto en formato pgvector (ej. "[0.1,0.2,...]") tal como lo
+          // devuelve PostgREST — no se parsea a number[] en la app.
+          embedding: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          seccion: SeccionConocimiento;
+          contenido?: string;
+          // Pasar JSON.stringify(number[]), nunca el array plano — ver
+          // lib/claude/embeddings.ts. PostgREST serializa un array JS como
+          // literal de array de Postgres ({0.1,0.2}), que no castea a
+          // vector; el string con corchetes sí.
+          embedding?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          seccion?: SeccionConocimiento;
+          contenido?: string;
+          embedding?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       clientes_con_etapa: {
@@ -328,7 +371,16 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      buscar_conocimiento: {
+        Args: { query_embedding: string; match_count?: number };
+        Returns: {
+          seccion: SeccionConocimiento;
+          contenido: string;
+          similarity: number;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
@@ -344,3 +396,5 @@ export type MensajeChat = Database["public"]["Tables"]["chat_agente"]["Row"];
 export type InfoNegocio = Database["public"]["Tables"]["info_negocio"]["Row"];
 export type MensajeWhatsapp =
   Database["public"]["Tables"]["mensajes_whatsapp"]["Row"];
+export type ConocimientoNegocio =
+  Database["public"]["Tables"]["conocimiento_negocio"]["Row"];

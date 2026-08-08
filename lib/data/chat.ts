@@ -32,6 +32,12 @@ export const getHistorialChat = cache(async function getHistorialChat(
   return (data ?? []).reverse();
 });
 
+/**
+ * Tabla legacy reemplazada por conocimiento_negocio (ver
+ * lib/data/conocimiento.ts). Se mantiene solo para que /conocimiento
+ * pueda mostrarle a Edwin el aviso de "tenías esto guardado antes" si
+ * migró desde la Configuración vieja.
+ */
 export const getInfoNegocio = cache(async function getInfoNegocio(
   supabase: DB
 ): Promise<InfoNegocio | null> {

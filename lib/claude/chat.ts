@@ -1,5 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 
 // Prompt base compartido por los dos chats (cliente y negocio). Cada
 // llamada le agrega su propio bloque de contexto (ver
@@ -26,21 +27,26 @@ function getClient(): Anthropic {
 
 /**
  * Responde un turno de chat. `contextoEspecifico` es el bloque de cliente o
- * de negocio ya armado (lib/services/chatContexto.service.ts); `infoNegocio`
- * es el contenido editable de la tabla info_negocio, o null si Edwin
- * todavía no lo llenó.
+ * de negocio ya armado (lib/services/chatContexto.service.ts); `fragmentos`
+ * son las secciones de conocimiento más relevantes al mensaje del usuario
+ * (búsqueda semántica vía lib/services/conocimiento.service.ts), o [] si no
+ * hay ninguna relevante o falta VOYAGE_API_KEY.
  */
 export async function responderChat(
   historial: MensajeConversacion[],
   contextoEspecifico: string,
-  infoNegocio: string | null
+  fragmentos: FragmentoConocimiento[]
 ): Promise<string> {
   const system = [
     SYSTEM_PROMPT_BASE,
     "",
     contextoEspecifico,
-    ...(infoNegocio
-      ? ["", "Información del negocio (catálogo, garantías, objeciones):", infoNegocio]
+    ...(fragmentos.length
+      ? [
+          "",
+          "Información relevante del negocio (catálogo, garantías, objeciones, etc.):",
+          ...fragmentos.map((f) => `[${f.seccion}] ${f.contenido}`),
+        ]
       : []),
   ].join("\n");
 

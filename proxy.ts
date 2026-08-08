@@ -5,9 +5,11 @@ import { NextResponse, type NextRequest } from "next/server";
 const AUTH_ROUTES = ["/login"];
 
 // Rutas siempre públicas sin importar la sesión — el cliente abre su
-// cotización por link, esté Edwin logueado en ese navegador o no.
+// cotización por link (esté Edwin logueado en ese navegador o no), y el
+// webhook de WhatsApp lo llama Meta directamente, sin cookies de sesión
+// (la seguridad ahí la da la firma X-Hub-Signature-256, no el login).
 function esRutaPublicaSiempre(pathname: string) {
-  return pathname.startsWith("/cotizacion/");
+  return pathname.startsWith("/cotizacion/") || pathname === "/api/whatsapp/webhook";
 }
 
 function faltaConfiguracion() {

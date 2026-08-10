@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
-const TAMANO_MAXIMO = 5 * 1024 * 1024; // 5MB
+const TAMANO_MAXIMO = 4 * 1024 * 1024; // 4MB — techo real de Vercel para el body de un Server Action es 4.5MB
 
 export const NuevoPedidoSchema = z.object({
   cliente_id: z.string().uuid("Selecciona un cliente."),
@@ -15,7 +15,7 @@ export const NuevoPedidoSchema = z.object({
   foto: z
     .instanceof(File, { message: "Sube una foto del pedido." })
     .refine((f) => f.size > 0, "Sube una foto del pedido.")
-    .refine((f) => f.size <= TAMANO_MAXIMO, "La foto no puede pesar más de 5MB.")
+    .refine((f) => f.size <= TAMANO_MAXIMO, "La foto no puede pesar más de 4MB.")
     .refine(
       (f) => TIPOS_PERMITIDOS.includes(f.type),
       "Solo se aceptan fotos JPG, PNG o WebP."

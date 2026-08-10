@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { CargaMasivaCatalogo } from "@/components/conocimiento/CargaMasivaCatalogo";
 
 export function FormularioConocimiento({
   filas,
@@ -19,13 +20,18 @@ export function FormularioConocimiento({
 
   return (
     <div className="flex max-w-2xl flex-col gap-4">
-      {ORDEN_SECCIONES.map((seccion) => (
-        <TarjetaSeccion
-          key={seccion}
-          seccion={seccion}
-          fila={porSeccion.get(seccion) ?? null}
-        />
-      ))}
+      {ORDEN_SECCIONES.map((seccion) => {
+        const fila = porSeccion.get(seccion) ?? null;
+        return (
+          <div key={seccion} className="flex flex-col gap-4">
+            {/* key con updated_at: sin esto, después de guardar por carga
+            masiva la tarjeta no se entera del contenido nuevo — su estado
+            local solo se inicializa una vez, al montar. */}
+            <TarjetaSeccion key={fila?.updated_at ?? seccion} seccion={seccion} fila={fila} />
+            {seccion === "catalogo" && <CargaMasivaCatalogo />}
+          </div>
+        );
+      })}
     </div>
   );
 }

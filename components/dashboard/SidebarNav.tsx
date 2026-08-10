@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, BarChart3, ListChecks, BookOpen } from "lucide-react";
+import { LayoutGrid, Users, BarChart3, ListChecks, GraduationCap } from "lucide-react";
 
 // Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
-  { href: "/conocimiento", label: "Conocimiento", icon: BookOpen },
+  { href: "/conocimiento", label: "Entrenamiento", icon: GraduationCap },
 ];
 
 export function SidebarNav() {

@@ -1,13 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { getConocimientoNegocio } from "@/lib/data/conocimiento";
-import { getInfoNegocio } from "@/lib/data/chat";
+import { getInfoNegocio, getHistorialChat } from "@/lib/data/chat";
 import { FormularioConocimiento } from "@/components/conocimiento/FormularioConocimiento";
+import { EstadisticasConocimiento } from "@/components/conocimiento/EstadisticasConocimiento";
+import { ChatNegocio } from "@/components/dashboard/ChatNegocio";
 
 export default async function ConocimientoPage() {
   const supabase = await createClient();
-  const [filas, infoNegocioAntigua] = await Promise.all([
+  const [filas, infoNegocioAntigua, historialChat] = await Promise.all([
     getConocimientoNegocio(supabase),
     getInfoNegocio(supabase),
+    getHistorialChat(supabase, null),
   ]);
 
   const hayContenidoNuevo = filas.some((f) => f.contenido.trim() !== "");
@@ -20,11 +23,10 @@ export default async function ConocimientoPage() {
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
       <div className="mb-6">
         <h1 className="text-[22px] font-bold tracking-tight text-white">
-          Conocimiento del negocio
+          Entrenamiento del agente
         </h1>
         <p className="mt-0.5 text-[13px] text-[#444]">
-          Catálogo, garantías, objeciones y más — el agente de IA busca aquí
-          antes de responder preguntas del negocio.
+          Edita lo que tu agente sabe del negocio y pruébalo en vivo, a la derecha.
         </p>
       </div>
 
@@ -43,7 +45,14 @@ export default async function ConocimientoPage() {
         </div>
       )}
 
-      <FormularioConocimiento filas={filas} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+        <FormularioConocimiento filas={filas} />
+
+        <div className="flex flex-col gap-6">
+          <ChatNegocio historialInicial={historialChat} />
+          <EstadisticasConocimiento filas={filas} />
+        </div>
+      </div>
     </div>
   );
 }

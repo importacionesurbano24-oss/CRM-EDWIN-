@@ -19,7 +19,7 @@ export function FormularioConocimiento({
   const porSeccion = new Map(filas.map((f) => [f.seccion, f]));
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {ORDEN_SECCIONES.map((seccion) => {
         const fila = porSeccion.get(seccion) ?? null;
         return (
@@ -71,10 +71,15 @@ function TarjetaSeccion({
     });
   }
 
+  const Icono = meta.icon;
+
   return (
     <div className="rounded-[14px] border border-border bg-card p-6">
       <div className="mb-4 flex items-center justify-between gap-2">
-        <Label htmlFor={seccion}>{meta.label}</Label>
+        <div className="flex items-center gap-2">
+          <Icono className="size-4 text-[#888]" />
+          <Label htmlFor={seccion}>{meta.label}</Label>
+        </div>
         {contenido.trim() !== "" && (
           <Badge variant={tieneEmbedding ? "default" : "outline"}>
             {tieneEmbedding ? "IA activa" : "Sin búsqueda semántica"}

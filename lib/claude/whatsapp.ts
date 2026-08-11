@@ -5,13 +5,16 @@ import { es } from "date-fns/locale";
 import type { MensajeWhatsapp } from "@/lib/types";
 import { formatearContexto, type ContextoCliente } from "@/lib/claude/agente";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
+import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
 
 // Mismo criterio que lib/claude/chat.ts y lib/claude/agente.ts: prompt
 // como constante (no variable de entorno), claude-sonnet-5,
 // thinking:disabled — igual al resto del proyecto.
 const SYSTEM_PROMPT = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Edwin, el vendedor, te pide que le redactes la respuesta de WhatsApp para un cliente.
 
-Tono: como lo escribiría Edwin de verdad por WhatsApp — cercano, tuteando, frases cortas, sin firma ni formato de correo. Usa técnicas de neuroventas y urgencia suave, nunca presionando.
+Tono: como lo escribiría Edwin de verdad por WhatsApp — cercano, tuteando, frases cortas, sin firma ni formato de correo.
+
+${METODOLOGIA_VENTAS}
 
 Reglas estrictas:
 - Nunca inventes precios, fechas ni productos que no estén en el contexto.

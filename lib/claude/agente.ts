@@ -7,11 +7,14 @@ import { es } from "date-fns/locale";
 import type { ClienteConEtapa, Seguimiento, Cotizacion, Pedido } from "@/lib/types";
 import { ETAPA_META } from "@/lib/ui/etapa";
 import { formatMoneda } from "@/lib/ui/cotizacion";
+import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
 
 // Prompt del sistema como constante (no como variable de entorno), según CLAUDE.md.
 const SYSTEM_PROMPT = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones en Colombia. Ayudas a Edwin, el vendedor, a decidir qué hacer a continuación con un cliente o prospecto, a partir de su historial de seguimiento, cotizaciones y pedidos.
 
 Da una recomendación concreta y accionable para la próxima acción — nunca genérica como "hacer seguimiento". Y redacta un borrador de mensaje corto en español, tono cercano y profesional (como lo escribiría Edwin por WhatsApp, no una plantilla corporativa), listo para copiar y enviar tal cual.
+
+${METODOLOGIA_VENTAS}
 
 No inventes datos que no estén en el contexto (precios, fechas, productos específicos). Si falta un dato puntual, sé genérico solo en ese punto, pero mantén el resto de la recomendación concreta.`;
 

@@ -13,11 +13,13 @@ import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
 const SALUDO = "¿En qué puedo ayudar, Dormiluna?";
 
 /**
- * UI y estado compartidos por los dos chats (ficha de cliente y negocio).
- * Empieza como tarjeta chica embebida; se expande a pantalla completa
- * estilo ChatGPT recién cuando se envía el primer mensaje (no al enfocar
- * el campo). Si `alCerrarIrA` viene definido, cerrar el chat expandido
- * navega ahí en vez de solo volver a la tarjeta chica.
+ * UI y estado compartidos por los chats de la app. Por defecto empieza
+ * como tarjeta chica embebida; se expande a pantalla completa estilo
+ * ChatGPT recién cuando se envía el primer mensaje (no al enfocar el
+ * campo) — salvo que se monte con `expandidoInicial`, para usarlo directo
+ * como modal (ver AgentTestModal). Si `alCerrarIrA` viene definido, cerrar
+ * el chat expandido navega ahí en vez de solo volver a la tarjeta chica;
+ * `onCerrar` avisa a quien lo montó (por ejemplo, para desmontarlo).
  */
 export function PanelChat({
   clienteId,

@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { BurbujaMensaje } from "@/components/chat/BurbujaMensaje";
 import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
 
+const SALUDO = "¿En qué puedo ayudar, Dormiluna?";
+
 /**
  * UI y estado compartidos por los dos chats (ficha de cliente y negocio).
  * Empieza como tarjeta chica embebida; se expande a pantalla completa
@@ -70,14 +72,36 @@ export function PanelChat({
     setMensajes((prev) => [...prev, mensajeAsistente]);
   }
 
+  const vacio = mensajes.length === 0;
+
   const listaMensajes = (
     <>
-      {mensajes.length === 0 && <p className="text-sm text-[#555]">{mensajeVacio}</p>}
       {mensajes.map((m) => (
         <BurbujaMensaje key={m.id} mensaje={m} />
       ))}
       {pending && <p className="text-xs text-[#555]">Pensando...</p>}
     </>
+  );
+
+  const saludoVacio = (tamano: "sm" | "lg") => (
+    <div
+      className={`flex flex-col items-center justify-center gap-2 text-center ${
+        tamano === "lg" ? "flex-1 px-4 py-10" : "py-8"
+      }`}
+    >
+      <p
+        className={
+          tamano === "lg"
+            ? "text-2xl font-semibold text-[#F0F0F0]"
+            : "text-base font-semibold text-[#F0F0F0]"
+        }
+      >
+        {SALUDO}
+      </p>
+      <p className={tamano === "lg" ? "max-w-md text-sm text-[#666]" : "max-w-xs text-[13px] text-[#666]"}>
+        {mensajeVacio}
+      </p>
+    </div>
   );
 
   if (expandido) {
@@ -94,10 +118,17 @@ export function PanelChat({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-6 md:px-6">
-          <div className="mx-auto flex max-w-3xl flex-col gap-4">
-            {listaMensajes}
-            {accionExtra && mensajes.length === 0 && (
+        <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6 md:px-6">
+          {vacio ? (
+            saludoVacio("lg")
+          ) : (
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">{listaMensajes}</div>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-border px-4 py-4 md:px-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-3">
+            {accionExtra && vacio && (
               <Button
                 variant="outline"
                 size="sm"
@@ -109,11 +140,6 @@ export function PanelChat({
                 {accionExtra.label}
               </Button>
             )}
-          </div>
-        </div>
-
-        <div className="shrink-0 border-t border-border px-4 py-4 md:px-6">
-          <div className="mx-auto max-w-3xl">
             <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
           </div>
         </div>
@@ -141,9 +167,13 @@ export function PanelChat({
         )}
       </div>
 
-      <div className="mb-4 flex max-h-[360px] flex-col gap-3 overflow-y-auto">
-        {listaMensajes}
-      </div>
+      {vacio ? (
+        saludoVacio("sm")
+      ) : (
+        <div className="mb-4 flex max-h-[360px] flex-col gap-3 overflow-y-auto">
+          {listaMensajes}
+        </div>
+      )}
 
       <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
     </div>

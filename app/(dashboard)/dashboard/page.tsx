@@ -3,12 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
 import { es } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getClientesConEtapa,
-  getActividadReciente,
-  getTodosLosSeguimientos,
-  clientesQueAlcanzaron,
-} from "@/lib/data/clientes";
+import { getClientesConEtapa, getActividadReciente } from "@/lib/data/clientes";
 import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import { esPendienteHoy } from "@/lib/ui/urgencia";
 import { getHistorialChat } from "@/lib/data/chat";
@@ -48,10 +43,9 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [clientes, actividad, seguimientos, historialChat] = await Promise.all([
+  const [clientes, actividad, historialChat] = await Promise.all([
     getClientesConEtapa(supabase),
     getActividadReciente(supabase, 5),
-    getTodosLosSeguimientos(supabase),
     getHistorialChat(supabase, null),
   ]);
 
@@ -59,56 +53,8 @@ export default async function DashboardPage() {
 
   const tareasHoy = clientes.filter((c) => esPendienteHoy(c.proxima_accion_fecha));
 
-  const inicioSemana = new Date();
-  inicioSemana.setDate(inicioSemana.getDate() - 7);
-
   const contarEtapa = (etapa: string) =>
     clientes.filter((c) => c.etapa === etapa).length;
-
-  const nuevosEstaSemana = clientes.filter(
-    (c) => new Date(c.created_at) >= inicioSemana
-  ).length;
-
-  const kpis: {
-    label: string;
-    value: number;
-    sub: string;
-    color: string;
-    href: string;
-  }[] = [
-    {
-      label: "Prospectos activos",
-      value: contarEtapa("prospecto"),
-      sub: `+${nuevosEstaSemana} esta semana`,
-      color: "#F0F0F0",
-      href: "/clientes?etapa=prospecto",
-    },
-    {
-      label: "Cotizaciones abiertas",
-      value: contarEtapa("cotizo"),
-      sub: "clientes esperando respuesta",
-      color: ETAPA_META.cotizo.color,
-      href: "/clientes?etapa=cotizo",
-    },
-    {
-      label: "Clientes que compraron",
-      value: clientesQueAlcanzaron(seguimientos, [
-        "compro",
-        "posventa",
-        "referido_solicitado",
-      ]),
-      sub: "alguna vez",
-      color: ETAPA_META.compro.color,
-      href: "/clientes?etapa=compro,posventa,referido_solicitado",
-    },
-    {
-      label: "Referidos pedidos",
-      value: clientesQueAlcanzaron(seguimientos, ["referido_solicitado"]),
-      sub: "alguna vez",
-      color: ETAPA_META.referido_solicitado.color,
-      href: "/clientes?etapa=referido_solicitado",
-    },
-  ];
 
   const totalPipeline = clientes.length || 1;
   const pipeline = ETAPA_ORDEN.map((etapa) => {
@@ -147,30 +93,6 @@ export default async function DashboardPage() {
           Próxima tarea
           <ArrowRight className="size-4" />
         </Link>
-      </div>
-
-      <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        {kpis.map((kpi) => (
-          <Link
-            key={kpi.label}
-            href={kpi.href}
-            className="group rounded-[14px] border border-border bg-card p-5 transition-colors hover:border-[#2E2E2E]"
-          >
-            <div className="mb-3 flex items-center justify-between text-[11px] tracking-wide text-[#444] uppercase">
-              <span>{kpi.label}</span>
-              <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                →
-              </span>
-            </div>
-            <div
-              className="text-[32px] leading-none font-extrabold tracking-tight"
-              style={{ color: kpi.color }}
-            >
-              {kpi.value}
-            </div>
-            <div className="mt-1.5 text-xs text-[#444]">{kpi.sub}</div>
-          </Link>
-        ))}
       </div>
 
       <ChatNegocio historialInicial={historialChat} />

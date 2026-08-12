@@ -6,6 +6,16 @@ import type { MensajeChat } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { PanelChat } from "@/components/chat/PanelChat";
 
+/**
+ * Monta/desmonta PanelChat en vez de solo ocultarlo — decisión consciente:
+ * al cerrar y volver a abrir en la misma sesión de página, el panel arranca
+ * de nuevo desde `historialInicial` (el estado del último load), así que
+ * mensajes mandados en una apertura anterior no se ven hasta recargar la
+ * página. Ya quedan guardados en `chat_agente` (no se pierde nada en la
+ * base de datos) — es solo la vista en memoria de este panel de prueba, no
+ * la conversación real con clientes. No vale la pena controlar el estado
+ * de PanelChat desde afuera solo para este caso de uso.
+ */
 export function AgentTestModal({ historialInicial }: { historialInicial: MensajeChat[] }) {
   const [abierto, setAbierto] = useState(false);
 

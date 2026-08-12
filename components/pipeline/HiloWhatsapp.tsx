@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { MessageCircle, Sparkles, Send, AlertTriangle } from "lucide-react";
 import {
@@ -24,8 +24,13 @@ export function HiloWhatsapp({
   const [sugerencia, setSugerencia] = useState<string | null>(null);
   const [sugiriendo, setSugiriendo] = useState(false);
   const [enviando, startEnviar] = useTransition();
+  const finRef = useRef<HTMLDivElement>(null);
 
   const dentroVentana = dentroDeVentana24h(mensajes);
+
+  useEffect(() => {
+    finRef.current?.scrollIntoView({ block: "end" });
+  }, [mensajes]);
 
   async function generarSugerencia() {
     setSugiriendo(true);
@@ -94,6 +99,7 @@ export function HiloWhatsapp({
         {mensajes.map((m) => (
           <BurbujaWhatsapp key={m.id} mensaje={m} />
         ))}
+        <div ref={finRef} />
       </div>
 
       {sugerencia && (

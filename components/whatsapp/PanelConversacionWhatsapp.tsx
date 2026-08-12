@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Sparkles, Send, AlertTriangle } from "lucide-react";
@@ -26,8 +26,13 @@ export function PanelConversacionWhatsapp({
   const [borrador, setBorrador] = useState("");
   const [sugiriendo, startSugerir] = useTransition();
   const [enviando, startEnviar] = useTransition();
+  const finRef = useRef<HTMLDivElement>(null);
 
   const dentroVentana = dentroDeVentana24h(mensajes);
+
+  useEffect(() => {
+    finRef.current?.scrollIntoView({ block: "end" });
+  }, [mensajes]);
 
   async function sugerir() {
     if (!cliente) return;
@@ -100,6 +105,7 @@ export function PanelConversacionWhatsapp({
         {mensajes.map((m) => (
           <BurbujaWhatsapp key={m.id} mensaje={m} />
         ))}
+        <div ref={finRef} />
       </div>
 
       <div className="border-t border-border p-4">

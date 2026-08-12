@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { MessageCircle, Sparkles } from "lucide-react";
+import { MessageCircle, Sparkles, Send, AlertTriangle } from "lucide-react";
 import {
   actionSugerirRespuestaWhatsapp,
+  actionEnviarWhatsapp,
   actionMarcarWhatsappEnviado,
 } from "@/app/actions/whatsapp.actions";
+import { dentroDeVentana24h } from "@/lib/whatsapp/ventana";
 import type { MensajeWhatsapp } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { BurbujaWhatsapp } from "@/components/whatsapp/BurbujaWhatsapp";
 
 export function HiloWhatsapp({
   clienteId,
@@ -19,12 +22,15 @@ export function HiloWhatsapp({
 }) {
   const [mensajes, setMensajes] = useState(mensajesIniciales);
   const [sugerencia, setSugerencia] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [sugiriendo, setSugiriendo] = useState(false);
+  const [enviando, startEnviar] = useTransition();
+
+  const dentroVentana = dentroDeVentana24h(mensajes);
 
   async function generarSugerencia() {
-    setPending(true);
+    setSugiriendo(true);
     const result = await actionSugerirRespuestaWhatsapp(clienteId);
-    setPending(false);
+    setSugiriendo(false);
     if (!result.data) {
       toast.error(result.error);
       return;
@@ -32,25 +38,34 @@ export function HiloWhatsapp({
     setSugerencia(result.data);
   }
 
-  function copiar() {
+  function enviar() {
     if (!sugerencia) return;
-    navigator.clipboard
-      .writeText(sugerencia)
-      .then(() => toast.success("Mensaje copiado."))
-      .catch(() => toast.error("No se pudo copiar."));
+    startEnviar(async () => {
+      const result = await actionEnviarWhatsapp(clienteId, sugerencia);
+      if (!result.data) {
+        toast.error(result.error);
+        return;
+      }
+      const mensajeEnviado = result.data;
+      setMensajes((prev) => [...prev, mensajeEnviado]);
+      setSugerencia(null);
+      toast.success("Mensaje enviado.");
+    });
   }
 
-  async function marcarEnviado() {
+  function marcarEnviadoManual() {
     if (!sugerencia) return;
-    const result = await actionMarcarWhatsappEnviado(clienteId, sugerencia);
-    if (!result.data) {
-      toast.error(result.error);
-      return;
-    }
-    const mensajeGuardado = result.data;
-    setMensajes((prev) => [...prev, mensajeGuardado]);
-    setSugerencia(null);
-    toast.success("Marcado como enviado.");
+    startEnviar(async () => {
+      const result = await actionMarcarWhatsappEnviado(clienteId, sugerencia);
+      if (!result.data) {
+        toast.error(result.error);
+        return;
+      }
+      const mensajeGuardado = result.data;
+      setMensajes((prev) => [...prev, mensajeGuardado]);
+      setSugerencia(null);
+      toast.success("Marcado como enviado.");
+    });
   }
 
   // Sin actividad de WhatsApp todavía — no ocupar espacio en la ficha.
@@ -66,31 +81,18 @@ export function HiloWhatsapp({
         <Button
           variant="outline"
           size="sm"
-          disabled={pending}
+          disabled={sugiriendo}
           onClick={generarSugerencia}
           className="gap-1.5"
         >
           <Sparkles className="size-3.5" />
-          {pending ? "Pensando..." : "Sugerir respuesta"}
+          {sugiriendo ? "Pensando..." : "Sugerir respuesta"}
         </Button>
       </div>
 
       <div className="mb-4 flex max-h-[300px] flex-col gap-2.5 overflow-y-auto">
         {mensajes.map((m) => (
-          <div
-            key={m.id}
-            className={`flex ${m.direccion === "saliente" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap ${
-                m.direccion === "saliente"
-                  ? "bg-primary/15 text-[#F0F0F0]"
-                  : "bg-[#1A1A1A] text-[#E5E5E5]"
-              }`}
-            >
-              {m.contenido}
-            </div>
-          </div>
+          <BurbujaWhatsapp key={m.id} mensaje={m} />
         ))}
       </div>
 
@@ -100,13 +102,28 @@ export function HiloWhatsapp({
             Sugerencia
           </div>
           <p className="text-sm whitespace-pre-wrap text-[#D0D0D0]">{sugerencia}</p>
+
+          {!dentroVentana && (
+            <div className="flex items-start gap-2 text-[12px] text-[#AAA]">
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-[#FF9F43]" />
+              <span>
+                Pasaron más de 24h desde el último mensaje del cliente — WhatsApp ya no
+                permite mensajes libres.
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <Button size="sm" onClick={copiar}>
-              Copiar mensaje
-            </Button>
-            <Button size="sm" variant="outline" onClick={marcarEnviado}>
-              Marcar como enviado
-            </Button>
+            {dentroVentana ? (
+              <Button size="sm" disabled={enviando} onClick={enviar} className="gap-1.5">
+                <Send className="size-3.5" />
+                {enviando ? "Enviando..." : "Enviar"}
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" disabled={enviando} onClick={marcarEnviadoManual}>
+                {enviando ? "Guardando..." : "Marcar como enviado manualmente"}
+              </Button>
+            )}
           </div>
         </div>
       )}

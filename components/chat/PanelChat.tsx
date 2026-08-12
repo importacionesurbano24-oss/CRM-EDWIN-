@@ -27,6 +27,8 @@ export function PanelChat({
   historialInicial,
   accionExtra,
   alCerrarIrA,
+  expandidoInicial = false,
+  onCerrar,
 }: {
   clienteId: string | null;
   titulo: string;
@@ -35,15 +37,20 @@ export function PanelChat({
   historialInicial: MensajeChat[];
   accionExtra?: { label: string; mensaje: string };
   alCerrarIrA?: string;
+  /** Monta el panel directo en modo pantalla completa, sin esperar el primer mensaje. */
+  expandidoInicial?: boolean;
+  /** Se llama al cerrar — para que quien lo montó en un modal pueda desmontarlo. */
+  onCerrar?: () => void;
 }) {
   const router = useRouter();
   const [mensajes, setMensajes] = useState(historialInicial);
   const [pending, setPending] = useState(false);
-  const [expandido, setExpandido] = useState(false);
+  const [expandido, setExpandido] = useState(expandidoInicial);
 
   function cerrar() {
     setExpandido(false);
     if (alCerrarIrA) router.push(alCerrarIrA);
+    onCerrar?.();
   }
 
   async function enviar(mensaje: string) {

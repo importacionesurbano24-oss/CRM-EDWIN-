@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   getClienteConEtapa,
@@ -9,6 +7,7 @@ import {
 import { getHistorialChat } from "@/lib/data/chat";
 import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
+import { BotonVolver } from "@/components/pipeline/BotonVolver";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
 import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimientoForm";
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
@@ -38,13 +37,7 @@ export default async function ClienteDetallePage({
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
-      <Link
-        href="/clientes"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#666] hover:text-foreground"
-      >
-        <ArrowLeft className="size-3.5" />
-        Volver a clientes
-      </Link>
+      <BotonVolver texto="Volver a clientes" rutaFallback="/clientes" />
 
       <div className="mb-8 flex flex-wrap items-center gap-4">
         <ClienteAvatar id={cliente.id} nombre={cliente.nombre} size={52} />

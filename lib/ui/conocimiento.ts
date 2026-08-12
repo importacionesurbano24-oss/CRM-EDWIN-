@@ -87,7 +87,7 @@ export const PLANTILLAS_CONOCIMIENTO: Record<SeccionConocimiento, string> = {
   catalogo: `Colchón Ortopédico Pro — 160x190 — $1.200.000 — Beneficios: soporte lumbar, 10 años de garantía.
 Base cama doble reforzada — $450.000 — Estructura en madera, soporta hasta 200kg.`,
   promociones: `2x1 en almohadas viscoelásticas todo agosto. Financiación sin intereses a 3 meses con tarjetas en compras desde $1.000.000.`,
-  garantias: `10 años contra hundimiento en colchones ortopédicos y viscoelásticos. 2 años en bases cama. Cambio total si el hundimiento supera 2.5 cm; no cubre manchas ni mal uso.`,
+  garantias: `10 años contra hundimiento en colchones ortopédicos y viscoelásticos. 2 años en bases de cama. Cambio total si el hundimiento supera 2.5 cm; no cubre manchas ni mal uso.`,
   proceso_venta: `1) Preguntar para quién es y si tiene molestia de espalda. 2) Mostrar máximo 2 opciones según presupuesto. 3) Ofrecer probarlo en tienda. 4) Explicar garantía y forma de pago. 5) Cerrar con fecha de entrega.`,
   objeciones: `"Está muy caro" → Pregunta "¿caro respecto a qué?"; si es calidad, refuerza la garantía; si es presupuesto, ofrece la opción básica o financiación. "Lo voy a pensar" → Pregunta qué le genera duda, sin insistir en cerrar de inmediato.`,
   preguntas_frecuentes: `¿Hacen domicilios? Sí, gratis en compras +$800.000 dentro de Cúcuta, 24-48h. ¿Reciben el colchón viejo? Sí, retiro gratuito con compra nueva. ¿Pagos en cuotas? Sí, tarjetas hasta 12 meses.`,

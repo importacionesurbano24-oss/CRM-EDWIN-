@@ -92,6 +92,7 @@ export function TrainingSection({
 
     const lector = new FileReader();
     lector.onload = () => setContenido(String(lector.result ?? ""));
+    lector.onerror = () => toast.error("No se pudo leer el archivo.");
     lector.readAsText(archivo);
     e.target.value = "";
   }

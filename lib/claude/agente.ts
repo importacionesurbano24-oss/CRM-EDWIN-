@@ -4,7 +4,13 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import type { ClienteConEtapa, Seguimiento, Cotizacion, Pedido } from "@/lib/types";
+import type {
+  ClienteConEtapa,
+  Seguimiento,
+  Cotizacion,
+  Pedido,
+  MensajeWhatsapp,
+} from "@/lib/types";
 import { ETAPA_META } from "@/lib/ui/etapa";
 import { formatMoneda } from "@/lib/ui/cotizacion";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
@@ -43,6 +49,8 @@ export interface ContextoCliente {
   pedidos: Pick<Pedido, "monto" | "fecha_compra">[];
   /** Contenido ya extraído de la cotización externa más reciente (si el cliente tiene una anexada). */
   cotizacionExterna?: { url: string; contenido: string } | null;
+  /** Últimos mensajes de WhatsApp con este cliente, si los hay. */
+  mensajesWhatsapp?: Pick<MensajeWhatsapp, "direccion" | "contenido" | "created_at">[];
 }
 
 let cachedClient: Anthropic | null = null;
@@ -73,7 +81,7 @@ export async function sugerirProximaAccion(
 }
 
 export function formatearContexto(ctx: ContextoCliente): string {
-  const { cliente, historial, cotizaciones, pedidos, cotizacionExterna } = ctx;
+  const { cliente, historial, cotizaciones, pedidos, cotizacionExterna, mensajesWhatsapp } = ctx;
   const lineas: string[] = [];
 
   lineas.push(`Cliente: ${cliente.nombre}`);
@@ -123,6 +131,16 @@ export function formatearContexto(ctx: ContextoCliente): string {
   }
   for (const p of pedidos) {
     lineas.push(`- [${p.fecha_compra}] ${formatMoneda(p.monto)}`);
+  }
+
+  if (mensajesWhatsapp && mensajesWhatsapp.length > 0) {
+    lineas.push("");
+    lineas.push("Conversación de WhatsApp reciente (más reciente al final):");
+    for (const m of mensajesWhatsapp.slice(-15)) {
+      const fecha = format(new Date(m.created_at), "d MMM HH:mm", { locale: es });
+      const quien = m.direccion === "entrante" ? "Cliente" : "Edwin";
+      lineas.push(`- [${fecha}] ${quien}: ${m.contenido}`);
+    }
   }
 
   if (cotizacionExterna) {

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getClienteConEtapa, getHistorialCliente } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
+import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { sugerirProximaAccion, type Sugerencia } from "@/lib/claude/agente";
 import { leerContenidoUrl } from "@/lib/utils/leer-url";
 import type { ActionResult } from "@/lib/action-result";
@@ -13,11 +14,12 @@ export async function actionSugerirProximaAccion(
 ): Promise<ActionResult<Sugerencia>> {
   const supabase = await createClient();
 
-  const [cliente, historial, cotizaciones, pedidos] = await Promise.all([
+  const [cliente, historial, cotizaciones, pedidos, mensajesWhatsapp] = await Promise.all([
     getClienteConEtapa(supabase, clienteId),
     getHistorialCliente(supabase, clienteId),
     getCotizaciones(supabase),
     getPedidos(supabase),
+    getMensajesWhatsapp(supabase, clienteId),
   ]);
 
   if (!cliente) {
@@ -36,6 +38,7 @@ export async function actionSugerirProximaAccion(
       cotizaciones: cotizaciones.filter((c) => c.cliente_id === clienteId),
       pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
       cotizacionExterna,
+      mensajesWhatsapp,
     });
     return { data: sugerencia, error: null };
   } catch (error) {

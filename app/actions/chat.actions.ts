@@ -6,6 +6,7 @@ import { getHistorialChat } from "@/lib/data/chat";
 import { getClienteConEtapa, getHistorialCliente, getClientesConEtapa } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
+import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { getPedidosReporte } from "@/lib/data/reportes";
 import { responderChat, type MensajeConversacion } from "@/lib/claude/chat";
 import { buscarConocimientoRelevante } from "@/lib/services/conocimiento.service";
@@ -50,11 +51,12 @@ export async function actionEnviarMensajeChat(
 
   let contextoEspecifico: string;
   if (parsed.data.clienteId) {
-    const [cliente, historialCliente, cotizaciones, pedidos] = await Promise.all([
+    const [cliente, historialCliente, cotizaciones, pedidos, mensajesWhatsapp] = await Promise.all([
       getClienteConEtapa(supabase, parsed.data.clienteId),
       getHistorialCliente(supabase, parsed.data.clienteId),
       getCotizaciones(supabase),
       getPedidos(supabase),
+      getMensajesWhatsapp(supabase, parsed.data.clienteId),
     ]);
 
     if (!cliente) {
@@ -66,6 +68,7 @@ export async function actionEnviarMensajeChat(
       historial: historialCliente,
       cotizaciones: cotizaciones.filter((c) => c.cliente_id === parsed.data.clienteId),
       pedidos: pedidos.filter((p) => p.cliente_id === parsed.data.clienteId),
+      mensajesWhatsapp,
     });
   } else {
     const [clientes, pedidosReporte] = await Promise.all([

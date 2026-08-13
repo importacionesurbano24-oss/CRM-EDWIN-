@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Sparkles, Send, AlertTriangle } from "lucide-react";
 import {
@@ -18,12 +19,17 @@ import { BurbujaWhatsapp } from "@/components/whatsapp/BurbujaWhatsapp";
 export function PanelConversacionWhatsapp({
   cliente,
   hiloInicial,
+  borradorInicial,
 }: {
   cliente: ClienteConEtapa | null;
   hiloInicial: MensajeWhatsapp[];
+  /** Mensaje que trae el link "Ir a WhatsApp →" desde la ficha del cliente. */
+  borradorInicial?: string;
 }) {
+  const router = useRouter();
   const [mensajes, setMensajes] = useState(hiloInicial);
-  const [borrador, setBorrador] = useState("");
+  const [borrador, setBorrador] = useState(borradorInicial ?? "");
+  const [vieneDelAgente, setVieneDelAgente] = useState(Boolean(borradorInicial));
   const [sugiriendo, startSugerir] = useTransition();
   const [enviando, startEnviar] = useTransition();
   const finRef = useRef<HTMLDivElement>(null);
@@ -34,6 +40,15 @@ export function PanelConversacionWhatsapp({
     finRef.current?.scrollIntoView({ block: "end" });
   }, [mensajes]);
 
+  // Limpia ?mensaje= de la URL una vez que ya sembró el borrador — así un
+  // refresh de la página no lo vuelve a rellenar.
+  useEffect(() => {
+    if (borradorInicial && cliente) {
+      router.replace(`/whatsapp?cliente=${cliente.id}`, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function sugerir() {
     if (!cliente) return;
     startSugerir(async () => {
@@ -43,6 +58,7 @@ export function PanelConversacionWhatsapp({
         return;
       }
       setBorrador(result.data);
+      setVieneDelAgente(true);
     });
   }
 
@@ -57,6 +73,7 @@ export function PanelConversacionWhatsapp({
       const mensajeEnviado = result.data;
       setMensajes((prev) => [...prev, mensajeEnviado]);
       setBorrador("");
+      setVieneDelAgente(false);
       toast.success("Mensaje enviado.");
     });
   }
@@ -72,6 +89,7 @@ export function PanelConversacionWhatsapp({
       const mensajeGuardado = result.data;
       setMensajes((prev) => [...prev, mensajeGuardado]);
       setBorrador("");
+      setVieneDelAgente(false);
       toast.success("Marcado como enviado.");
     });
   }
@@ -121,11 +139,19 @@ export function PanelConversacionWhatsapp({
         )}
         <Textarea
           value={borrador}
-          onChange={(e) => setBorrador(e.target.value)}
+          onChange={(e) => {
+            setBorrador(e.target.value);
+            if (!e.target.value.trim()) setVieneDelAgente(false);
+          }}
           rows={3}
           placeholder="Escribe tu respuesta..."
-          className="mb-3"
+          className={`mb-3 ${vieneDelAgente ? "border-primary/60" : ""}`}
         />
+        {vieneDelAgente && (
+          <p className="mb-3 text-[11px] text-primary/80">
+            Este mensaje lo generó el agente — revísalo antes de enviar.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"

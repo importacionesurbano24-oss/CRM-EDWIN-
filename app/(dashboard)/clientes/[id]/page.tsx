@@ -9,6 +9,7 @@ import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
 import { BotonVolver } from "@/components/pipeline/BotonVolver";
 import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
+import { BotonEnviarWhatsApp } from "@/components/clientes/BotonEnviarWhatsApp";
 import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimientoForm";
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
 import { ChatAgente } from "@/components/pipeline/ChatAgente";
@@ -51,7 +52,14 @@ export default async function ClienteDetallePage({
             {ORIGEN_LABEL[cliente.origen] ?? cliente.origen}
           </p>
         </div>
-        <EtapaBadge etapa={cliente.etapa} />
+        <div className="flex shrink-0 items-center gap-2">
+          <EtapaBadge etapa={cliente.etapa} />
+          <BotonEnviarWhatsApp
+            clienteId={cliente.id}
+            clienteNombre={cliente.nombre}
+            telefono={cliente.telefono_whatsapp}
+          />
+        </div>
       </div>
 
       <div className="mb-6">

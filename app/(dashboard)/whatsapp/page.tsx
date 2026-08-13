@@ -10,9 +10,9 @@ import { WhatsappRealtimeListener } from "@/components/whatsapp/WhatsappRealtime
 export default async function WhatsappPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cliente?: string }>;
+  searchParams: Promise<{ cliente?: string; mensaje?: string }>;
 }) {
-  const { cliente: clienteQuery } = await searchParams;
+  const { cliente: clienteQuery, mensaje: mensajeQuery } = await searchParams;
   const supabase = await createClient();
 
   const [conversaciones, { data: { user } }] = await Promise.all([
@@ -78,6 +78,7 @@ export default async function WhatsappPage({
           key={clienteSeleccionadoId ?? "vacio"}
           cliente={cliente}
           hiloInicial={hilo}
+          borradorInicial={mensajeQuery}
         />
       </div>
 

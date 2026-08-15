@@ -14,6 +14,7 @@ import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimi
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
 import { ChatAgente } from "@/components/pipeline/ChatAgente";
 import { HiloWhatsapp } from "@/components/pipeline/HiloWhatsapp";
+import { BannerModoEnfoque } from "@/components/pipeline/BannerModoEnfoque";
 
 const ORIGEN_LABEL: Record<string, string> = {
   "walk-in": "Llegó a la tienda",
@@ -23,10 +24,13 @@ const ORIGEN_LABEL: Record<string, string> = {
 
 export default async function ClienteDetallePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ volver?: string; vistos?: string; total?: string }>;
 }) {
   const { id } = await params;
+  const { volver, vistos, total } = await searchParams;
   const supabase = await createClient();
 
   const cliente = await getClienteConEtapa(supabase, id);
@@ -39,6 +43,8 @@ export default async function ClienteDetallePage({
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
       <BotonVolver texto="Volver a clientes" rutaFallback="/clientes" />
+
+      {volver === "enfoque" && <BannerModoEnfoque vistos={vistos} total={total} />}
 
       <div className="mb-8 flex flex-wrap items-center gap-4">
         <ClienteAvatar id={cliente.id} nombre={cliente.nombre} size={52} />

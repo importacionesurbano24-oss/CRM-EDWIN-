@@ -57,17 +57,21 @@ export const getHistorialCliente = cache(async function getHistorialCliente(
 });
 
 /**
- * cliente_id + etapa de CADA seguimiento (no solo el más reciente por
- * cliente). Sirve para KPIs tipo "clientes que compraron alguna vez" —
- * clientes_con_etapa solo da la etapa actual, así que un cliente que ya
- * avanzó a posventa dejaría de contar como "compró" si solo miráramos ahí.
+ * cliente_id + etapa + fecha + notas de CADA seguimiento (no solo el más
+ * reciente por cliente). Sirve para KPIs tipo "clientes que compraron
+ * alguna vez" — clientes_con_etapa solo da la etapa actual, así que un
+ * cliente que ya avanzó a posventa dejaría de contar como "compró" si solo
+ * miráramos ahí. `created_at` y `notas` los usa lib/services/reportes.service.ts
+ * para el embudo acumulativo, el tiempo de cierre y el rendimiento del
+ * agente IA.
  */
 export const getTodosLosSeguimientos = cache(async function getTodosLosSeguimientos(
   supabase: DB
-): Promise<Pick<Seguimiento, "cliente_id" | "etapa">[]> {
+): Promise<Pick<Seguimiento, "cliente_id" | "etapa" | "created_at" | "notas">[]> {
   const { data, error } = await supabase
     .from("seguimientos")
-    .select("cliente_id, etapa");
+    .select("cliente_id, etapa, created_at, notas")
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error("getTodosLosSeguimientos:", error.message);

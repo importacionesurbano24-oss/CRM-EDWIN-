@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getUserIdPropietario } from "@/lib/whatsapp/propietario";
 import { mismoTelefono } from "@/lib/whatsapp/telefono";
+import { NOTA_LEAD_AUTOMATICO_WHATSAPP } from "@/lib/whatsapp/constantes";
 
 // Única API route de lógica de negocio permitida por CLAUDE.md: Meta solo
 // puede llamar a una URL HTTP, no a un Server Action.
@@ -145,7 +146,7 @@ async function obtenerOCrearCliente(
     user_id: userId,
     cliente_id: nuevoCliente.id,
     etapa: "prospecto",
-    notas: "Cliente creado automáticamente por un mensaje de WhatsApp entrante.",
+    notas: NOTA_LEAD_AUTOMATICO_WHATSAPP,
   });
 
   return nuevoCliente.id;

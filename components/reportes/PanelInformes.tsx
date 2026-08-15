@@ -1,120 +1,160 @@
-import Link from "next/link";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import type { ClienteConEtapa } from "@/lib/types";
-import type { PedidoReporte } from "@/lib/data/reportes";
+import type { PedidoReporte, CotizacionReporte, MensajeWhatsappReporte } from "@/lib/data/reportes";
+import type { AlertaBriefing } from "@/lib/services/briefing.service";
 import {
-  contarNuevosEnPeriodo,
+  PERIODO_PRESETS,
   clientesPorOrigen,
-  clientesPorEtapaActual,
-  serieDiaria,
-  PERIODOS,
-  type Periodo,
+  contarConAnterior,
+  embudoVentas,
+  rendimientoAgenteIA,
+  serieDiariaMonto,
+  sumarCotizacionesPorCliente,
+  sumarConAnterior,
+  tasaConversion,
+  tiempoPromedioCierre,
+  valorPipeline,
+  type PeriodoPreset,
+  type RangoPeriodo,
+  type SeguimientoCompleto,
 } from "@/lib/services/reportes.service";
+import { formatMoneda } from "@/lib/ui/cotizacion";
 import { BarraComparativa } from "@/components/charts/BarraComparativa";
 import { Sparkline } from "@/components/charts/Sparkline";
-import { Donut } from "@/components/charts/Donut";
-import { TarjetaInforme } from "./TarjetaInforme";
+import { TarjetaInforme } from "@/components/reportes/TarjetaInforme";
+import { TarjetaKpi } from "@/components/reportes/TarjetaKpi";
+import { EmbudoVentas } from "@/components/reportes/EmbudoVentas";
+import { OportunidadesSinSeguimiento } from "@/components/reportes/OportunidadesSinSeguimiento";
+import { RendimientoAgenteIA } from "@/components/reportes/RendimientoAgenteIA";
+import { FiltrosPeriodo } from "@/components/reportes/FiltrosPeriodo";
 
 export function PanelInformes({
   clientes,
   pedidos,
-  dias,
+  cotizaciones,
+  seguimientos,
+  mensajesWhatsapp,
+  alertasBriefing,
+  rango,
+  periodo,
+  desde,
+  hasta,
 }: {
   clientes: ClienteConEtapa[];
   pedidos: PedidoReporte[];
-  dias: Periodo;
+  cotizaciones: CotizacionReporte[];
+  seguimientos: SeguimientoCompleto[];
+  mensajesWhatsapp: MensajeWhatsappReporte[];
+  alertasBriefing: AlertaBriefing[];
+  rango: RangoPeriodo;
+  periodo?: string;
+  desde?: string;
+  hasta?: string;
 }) {
-  const { actual, cambioPct } = contarNuevosEnPeriodo(
-    clientes.map((c) => c.created_at),
-    dias
-  );
+  const periodoActivo = (PERIODO_PRESETS.find((p) => p.valor === periodo)?.valor ??
+    "30") as PeriodoPreset;
+
+  const itemsPedidos = pedidos.map((p) => ({ fecha: p.fecha_compra, monto: p.monto }));
+  const ventas = sumarConAnterior(itemsPedidos, rango);
+  const serieVentas = serieDiariaMonto(itemsPedidos, rango);
+
+  const pipeline = valorPipeline(cotizaciones);
+  const conversion = tasaConversion(seguimientos);
+  const tiempoCierre = tiempoPromedioCierre(seguimientos);
+
+  const cotizacionesPorCliente = sumarCotizacionesPorCliente(cotizaciones);
+  const embudo = embudoVentas(seguimientos, cotizacionesPorCliente);
+
+  const rendimientoIA = rendimientoAgenteIA(mensajesWhatsapp, seguimientos, rango);
+
   const origenes = clientesPorOrigen(clientes);
-  const etapas = clientesPorEtapaActual(clientes);
-  const serieClientes = serieDiaria(
+  const clientesNuevos = contarConAnterior(
     clientes.map((c) => c.created_at),
-    dias
+    rango
   );
-  const seriePedidos = serieDiaria(
-    pedidos.map((p) => p.created_at),
-    dias
-  );
+
+  const rangoLabel = rango.esPersonalizado
+    ? `${format(rango.desde, "d MMM", { locale: es })} – ${format(rango.hasta, "d MMM", { locale: es })}`
+    : PERIODO_PRESETS.find((p) => p.valor === periodoActivo)?.label ?? "30 días";
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-white">
-            Panel de informes
-          </h1>
+          <h1 className="text-[22px] font-bold tracking-tight text-white">Reportes</h1>
           <p className="mt-0.5 text-[13px] text-[#444]">
-            Vista general de clientes y ventas
+            Centro de inteligencia comercial — {rangoLabel.toLowerCase()}
           </p>
         </div>
-        <div className="flex gap-0.5 rounded-lg border border-border bg-card p-1">
-          {PERIODOS.map((p) => (
-            <Link
-              key={p}
-              href={`/reportes?periodo=${p}`}
-              className={`rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-                dias === p
-                  ? "bg-[#222] text-[#F0F0F0]"
-                  : "text-[#444] hover:text-[#888]"
-              }`}
-            >
-              {p} días
-            </Link>
-          ))}
-        </div>
+        <FiltrosPeriodo
+          periodoActivo={periodoActivo}
+          esPersonalizado={rango.esPersonalizado}
+          desdeActual={desde}
+          hastaActual={hasta}
+        />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TarjetaInforme
-          titulo="Clientes nuevos"
-          subtitulo={`En los últimos ${dias} días`}
+      {/* KPIs principales */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <TarjetaKpi
+          titulo="Ventas del período"
+          valor={formatMoneda(ventas.actual)}
+          cambioPct={ventas.cambioPct}
         >
-          <div className="flex items-end gap-3">
-            <span className="text-[40px] leading-none font-extrabold text-white">
-              {actual}
-            </span>
-            {cambioPct !== null && (
-              <span
-                className={`mb-1 text-sm font-semibold ${
-                  cambioPct >= 0 ? "text-brand-lime" : "text-destructive"
-                }`}
-              >
-                {cambioPct >= 0 ? "+" : ""}
-                {cambioPct}% vs. período anterior
-              </span>
-            )}
-          </div>
+          <Sparkline datos={serieVentas} color="var(--brand-lime)" />
+        </TarjetaKpi>
+
+        <TarjetaKpi
+          titulo="Valor del pipeline"
+          valor={formatMoneda(pipeline)}
+          subtitulo="Cotizaciones enviadas o vistas, sin cerrar todavía"
+        />
+
+        <TarjetaKpi
+          titulo="Tasa de conversión"
+          valor={conversion !== null ? `${conversion}%` : "—"}
+          subtitulo="De quienes cotizaron, cuántos compraron — histórico"
+        />
+
+        <TarjetaKpi
+          titulo="Tiempo promedio de cierre"
+          valor={tiempoCierre !== null ? `${tiempoCierre} días` : "—"}
+          subtitulo="Desde el primer contacto hasta la compra"
+          invertirColor
+        />
+      </div>
+
+      {/* Estratégicas */}
+      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <TarjetaInforme
+          titulo="Embudo de ventas"
+          subtitulo="Clientes que llegaron al menos a cada etapa, con el valor cotizado asociado"
+        >
+          <EmbudoVentas etapas={embudo} />
         </TarjetaInforme>
 
         <TarjetaInforme
-          titulo="Fuentes de clientes"
-          subtitulo="Origen de todos los clientes registrados"
+          titulo="Oportunidades sin seguimiento"
+          subtitulo="Clientes que llevan demasiado tiempo sin contacto"
         >
-          <BarraComparativa datos={origenes} />
+          <OportunidadesSinSeguimiento alertas={alertasBriefing} />
         </TarjetaInforme>
 
         <TarjetaInforme
-          titulo="Clientes añadidos con el tiempo"
-          subtitulo={`Diario · últimos ${dias} días`}
-        >
-          <Sparkline datos={serieClientes} color="var(--primary)" />
-        </TarjetaInforme>
-
-        <TarjetaInforme
-          titulo="Pedidos con el tiempo"
-          subtitulo={`Diario · últimos ${dias} días`}
-        >
-          <Sparkline datos={seriePedidos} color="var(--brand-lime)" />
-        </TarjetaInforme>
-
-        <TarjetaInforme
-          titulo="Clientes por etapa"
-          subtitulo="Distribución actual del pipeline"
+          titulo="Rendimiento del agente IA"
+          subtitulo={`En ${rangoLabel.toLowerCase()}, salvo la conversión (histórica)`}
           className="lg:col-span-2"
         >
-          <Donut segmentos={etapas} />
+          <RendimientoAgenteIA rendimiento={rendimientoIA} />
+        </TarjetaInforme>
+
+        <TarjetaInforme
+          titulo="Origen de clientes"
+          subtitulo={`Todos los registrados · +${clientesNuevos.actual} en ${rangoLabel.toLowerCase()}`}
+          className="lg:col-span-2"
+        >
+          <BarraComparativa datos={origenes} />
         </TarjetaInforme>
       </div>
     </div>

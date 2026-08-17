@@ -48,6 +48,7 @@ export function PanelChat({
   const router = useRouter();
   const pathname = usePathname();
   const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
+  const [idAnimando, setIdAnimando] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
   const [nivel, setNivel] = useNivelIA();
@@ -103,6 +104,7 @@ export function PanelChat({
     }
     const mensajeAsistente = result.data;
     if (mensajeAsistente) {
+      setIdAnimando(mensajeAsistente.id);
       setMensajes((prev) => [...prev, mensajeAsistente]);
     }
   }
@@ -143,7 +145,7 @@ export function PanelChat({
   const listaMensajes = (
     <>
       {mensajes.map((m) => (
-        <BurbujaMensaje key={m.id} mensaje={m} />
+        <BurbujaMensaje key={m.id} mensaje={m} animar={m.id === idAnimando} />
       ))}
       {pending && <p className="text-xs text-[#555]">Pensando...</p>}
     </>

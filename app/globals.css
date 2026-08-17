@@ -57,7 +57,7 @@
   --card-foreground: #f0f0f0;
   --popover: #111111;
   --popover-foreground: #f0f0f0;
-  --primary: #ffdd00;
+  --primary: #ccff00;
   --primary-foreground: #0a0a0a;
   --secondary: #1a1a1a;
   --secondary-foreground: #f0f0f0;
@@ -69,7 +69,7 @@
   --destructive-foreground: #ffffff;
   --border: #1e1e1e;
   --input: #1e1e1e;
-  --ring: #ffdd00;
+  --ring: #ccff00;
   --brand-lime: #ccff00;
   --brand-lime-foreground: #0a0a0a;
   --chart-1: #ffdd00;
@@ -80,12 +80,12 @@
   --radius: 0.75rem;
   --sidebar: #0f0f0f;
   --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: #ffdd00;
+  --sidebar-primary: #ccff00;
   --sidebar-primary-foreground: #0a0a0a;
   --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ffdd00;
+  --sidebar-accent-foreground: #ccff00;
   --sidebar-border: #1a1a1a;
-  --sidebar-ring: #ffdd00;
+  --sidebar-ring: #ccff00;
 }
 
 @layer base {

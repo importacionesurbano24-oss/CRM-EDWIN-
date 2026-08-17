@@ -37,7 +37,12 @@ function nombrePorDia() {
   return `${dias[hoy.getDay()]} ${hoy.getDate()} de ${meses[hoy.getMonth()]}, ${hoy.getFullYear()}`;
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pregunta?: string }>;
+}) {
+  const { pregunta } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -95,7 +100,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <ChatNegocio historialInicial={historialChat} />
+      <ChatNegocio historialInicial={historialChat} preguntaInicial={pregunta} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-[14px] border border-border bg-card p-5">

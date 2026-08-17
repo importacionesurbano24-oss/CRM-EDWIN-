@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Syne } from "next/font/google";
 import {
   Search,
@@ -61,6 +62,7 @@ function suscribirseSaludo() {
  * servidor y corrigiendo al valor real apenas monta en el cliente.
  */
 export function InicioHome() {
+  const router = useRouter();
   const saludo = useSyncExternalStore(
     suscribirseSaludo,
     calcularSaludo,
@@ -83,6 +85,13 @@ export function InicioHome() {
   function limpiarBusqueda() {
     setBusqueda("");
     inputRef.current?.focus();
+  }
+
+  function buscar(e: React.FormEvent) {
+    e.preventDefault();
+    const texto = busqueda.trim();
+    if (!texto) return;
+    router.push(`/dashboard?pregunta=${encodeURIComponent(texto)}`);
   }
 
   return (
@@ -126,7 +135,8 @@ export function InicioHome() {
       </div>
 
       {/* Buscador */}
-      <div
+      <form
+        onSubmit={buscar}
         className="animate-in fade-in slide-in-from-bottom-4 fill-mode-both mt-10 w-full max-w-[560px] duration-500 [animation-delay:200ms]"
       >
         <div className="flex h-[60px] items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#161616] px-5 transition-colors focus-within:border-brand-lime">
@@ -151,7 +161,7 @@ export function InicioHome() {
             </button>
           )}
         </div>
-      </div>
+      </form>
 
       {/* Selector de nivel de IA — comparte estado con el resto del CRM */}
       <div

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { X, Bot } from "lucide-react";
 import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
@@ -28,6 +28,7 @@ export function PanelChat({
   historialInicial,
   sugerencias,
   alCerrarIrA,
+  mensajeInicial,
 }: {
   clienteId: string | null;
   titulo: string;
@@ -36,12 +37,24 @@ export function PanelChat({
   historialInicial: MensajeChat[];
   sugerencias?: { label: string; mensaje: string }[];
   alCerrarIrA?: string;
+  /** Si viene (ej. desde ?pregunta= en la URL), se envía solo una vez al montar. */
+  mensajeInicial?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [mensajes, setMensajes] = useState(historialInicial);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
   const [nivel, setNivel] = useNivelIA();
+  const yaEnvioInicial = useRef(false);
+
+  useEffect(() => {
+    if (!mensajeInicial || yaEnvioInicial.current) return;
+    yaEnvioInicial.current = true;
+    enviar(mensajeInicial);
+    router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mensajeInicial]);
 
   function cerrar() {
     setExpandido(false);

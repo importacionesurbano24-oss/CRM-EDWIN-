@@ -1,16 +1,13 @@
 "use client";
 
-import type { MensajeChat } from "@/lib/types";
 import { PanelChat } from "@/components/chat/PanelChat";
 
 export function ChatAgente({
   clienteId,
   clienteNombre,
-  historialInicial,
 }: {
   clienteId: string;
   clienteNombre: string;
-  historialInicial: MensajeChat[];
 }) {
   return (
     <PanelChat
@@ -18,7 +15,6 @@ export function ChatAgente({
       titulo="Chat con el agente"
       placeholder="Escribe tu pregunta..."
       mensajeVacio={`Pregúntale al agente sobre ${clienteNombre} — qué le escribes, qué cotizó, cuánto lleva sin responder, o pídele un mensaje de cierre.`}
-      historialInicial={historialInicial}
       sugerencias={[
         { label: "¿Qué le cotizamos?", mensaje: "¿Qué le hemos cotizado a este cliente?" },
         { label: "Redactar mensaje de cierre", mensaje: "Redáctame un mensaje para cerrar la venta con este cliente." },

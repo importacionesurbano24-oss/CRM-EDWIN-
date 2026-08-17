@@ -1,16 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { getConocimientoNegocio } from "@/lib/data/conocimiento";
-import { getInfoNegocio, getHistorialChat } from "@/lib/data/chat";
+import { getInfoNegocio } from "@/lib/data/chat";
 import { FormularioConocimiento } from "@/components/conocimiento/FormularioConocimiento";
 import { EstadisticasConocimiento } from "@/components/conocimiento/EstadisticasConocimiento";
 import { ChatNegocio } from "@/components/dashboard/ChatNegocio";
 
 export default async function ConocimientoPage() {
   const supabase = await createClient();
-  const [filas, infoNegocioAntigua, historialChat] = await Promise.all([
+  const [filas, infoNegocioAntigua] = await Promise.all([
     getConocimientoNegocio(supabase),
     getInfoNegocio(supabase),
-    getHistorialChat(supabase, null),
   ]);
 
   const hayContenidoNuevo = filas.some((f) => f.contenido.trim() !== "");
@@ -49,7 +48,7 @@ export default async function ConocimientoPage() {
         <FormularioConocimiento filas={filas} />
 
         <div className="flex flex-col gap-6">
-          <ChatNegocio historialInicial={historialChat} />
+          <ChatNegocio />
           <EstadisticasConocimiento filas={filas} />
         </div>
       </div>

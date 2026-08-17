@@ -5,7 +5,6 @@ import {
   getClienteConEtapa,
   getHistorialCliente,
 } from "@/lib/data/clientes";
-import { getHistorialChat } from "@/lib/data/chat";
 import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { ClienteHeaderCard } from "@/components/pipeline/ClienteHeaderCard";
@@ -31,13 +30,11 @@ export default async function ClienteDetallePage({
   const cliente = await getClienteConEtapa(supabase, id);
   if (!cliente) notFound();
 
-  const [historial, historialChat, mensajesWhatsapp, cotizaciones] =
-    await Promise.all([
-      getHistorialCliente(supabase, id),
-      getHistorialChat(supabase, id),
-      getMensajesWhatsapp(supabase, id),
-      getCotizaciones(supabase),
-    ]);
+  const [historial, mensajesWhatsapp, cotizaciones] = await Promise.all([
+    getHistorialCliente(supabase, id),
+    getMensajesWhatsapp(supabase, id),
+    getCotizaciones(supabase),
+  ]);
 
   const cotizacionesCliente = cotizaciones.filter((c) => c.cliente_id === id);
   const cotizacionActiva = cotizacionesCliente[0] ?? null; // ya viene ordenado por created_at desc
@@ -65,7 +62,6 @@ export default async function ClienteDetallePage({
           <ChatAgente
             clienteId={cliente.id}
             clienteNombre={cliente.nombre}
-            historialInicial={historialChat}
           />
 
           <HiloWhatsapp clienteId={cliente.id} mensajesIniciales={mensajesWhatsapp} />

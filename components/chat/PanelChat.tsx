@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { X, Bot } from "lucide-react";
 import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
 import type { MensajeChat } from "@/lib/types";
+import type { MensajeConversacion } from "@/lib/claude/chat";
 import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { BurbujaMensaje } from "@/components/chat/BurbujaMensaje";
 import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
@@ -19,13 +20,18 @@ const SALUDO = "¿En qué puedo ayudar, Dormiluna?";
  * estilo ChatGPT recién cuando se envía el primer mensaje (no al enfocar
  * el campo). Si `alCerrarIrA` viene definido, cerrar el chat expandido
  * navega ahí en vez de solo volver a la tarjeta chica.
+ *
+ * Cada apertura arranca en blanco a propósito — no se lee historial
+ * guardado. El "recuerdo" del agente durante la sesión es justamente lo
+ * que está en pantalla: se manda como contexto en cada mensaje, así que
+ * los turnos previos de ESTA conversación siguen funcionando con
+ * continuidad, pero nada de sesiones viejas se cuela sin que se vea.
  */
 export function PanelChat({
   clienteId,
   titulo,
   placeholder,
   mensajeVacio,
-  historialInicial,
   sugerencias,
   alCerrarIrA,
   mensajeInicial,
@@ -34,7 +40,6 @@ export function PanelChat({
   titulo: string;
   placeholder: string;
   mensajeVacio: string;
-  historialInicial: MensajeChat[];
   sugerencias?: { label: string; mensaje: string }[];
   alCerrarIrA?: string;
   /** Si viene (ej. desde ?pregunta= en la URL), se envía solo una vez al montar. */
@@ -42,7 +47,7 @@ export function PanelChat({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [mensajes, setMensajes] = useState(historialInicial);
+  const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
   const [nivel, setNivel] = useNivelIA();
@@ -64,6 +69,14 @@ export function PanelChat({
   async function enviar(mensaje: string) {
     setExpandido(true);
     setPending(true);
+
+    // Lo que ya está en pantalla ANTES de este mensaje — es el único
+    // "historial" que el agente conoce en esta sesión.
+    const historialPrevio: MensajeConversacion[] = mensajes.map((m) => ({
+      rol: m.rol,
+      mensaje: m.mensaje,
+    }));
+
     setMensajes((prev) => [
       ...prev,
       {
@@ -76,7 +89,7 @@ export function PanelChat({
       },
     ]);
 
-    const result = await actionEnviarMensajeChat(clienteId, mensaje, nivel);
+    const result = await actionEnviarMensajeChat(clienteId, mensaje, nivel, historialPrevio);
     setPending(false);
 
     // El mensaje del usuario ya se guardó y se muestra optimista arriba —

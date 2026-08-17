@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getHistorialChat } from "@/lib/data/chat";
 import { getClienteConEtapa, getHistorialCliente, getClientesConEtapa } from "@/lib/data/clientes";
 import { getCotizaciones } from "@/lib/data/cotizaciones";
 import { getPedidos } from "@/lib/data/pedidos";
@@ -22,7 +21,11 @@ import type { NivelIA } from "@/lib/claude/modelos";
 export async function actionEnviarMensajeChat(
   clienteId: string | null,
   mensaje: string,
-  nivel?: NivelIA
+  nivel: NivelIA | undefined,
+  /** Turnos previos de ESTA sesión de chat (lo que ya está en pantalla) — el
+   * cliente los manda porque ya no se guarda/relee un historial persistente;
+   * cada apertura del chat arranca en blanco. */
+  historialPrevio: MensajeConversacion[]
 ): Promise<ActionResult<MensajeChat>> {
   const parsed = EnviarMensajeSchema.safeParse({ clienteId, mensaje });
   if (!parsed.success) {
@@ -31,7 +34,6 @@ export async function actionEnviarMensajeChat(
 
   const supabase = await createClient();
 
-  const historialPrevio = await getHistorialChat(supabase, parsed.data.clienteId);
   const fragmentos = await buscarConocimientoRelevante(supabase, parsed.data.mensaje);
 
   const { data: mensajeUsuario, error: errorInsert } = await supabase
@@ -81,7 +83,7 @@ export async function actionEnviarMensajeChat(
   }
 
   const historialCompleto: MensajeConversacion[] = [
-    ...historialPrevio.map((m) => ({ rol: m.rol, mensaje: m.mensaje })),
+    ...historialPrevio,
     { rol: "user", mensaje: parsed.data.mensaje },
   ];
 

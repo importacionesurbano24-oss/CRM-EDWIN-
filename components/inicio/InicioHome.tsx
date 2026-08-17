@@ -7,6 +7,7 @@ import { Syne } from "next/font/google";
 import {
   Search,
   X,
+  ArrowUp,
   Zap,
   Star,
   UserPlus,
@@ -160,6 +161,13 @@ export function InicioHome() {
               <X className="size-4" />
             </button>
           )}
+          <button
+            type="submit"
+            disabled={!busqueda.trim()}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-lime text-brand-lime-foreground transition-opacity disabled:opacity-30"
+          >
+            <ArrowUp className="size-4" />
+          </button>
         </div>
       </form>
 

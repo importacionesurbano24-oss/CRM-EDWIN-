@@ -79,12 +79,19 @@ export function PanelChat({
     const result = await actionEnviarMensajeChat(clienteId, mensaje, nivel);
     setPending(false);
 
-    if (!result.data) {
+    // El mensaje del usuario ya se guardó y se muestra optimista arriba —
+    // si falló la respuesta del agente, result.data puede venir con ese
+    // mismo mensaje de usuario (no null) junto con result.error. Chequear
+    // el error primero evita duplicar el mensaje del usuario como si
+    // fuera la respuesta del agente.
+    if (result.error) {
       toast.error(result.error);
       return;
     }
     const mensajeAsistente = result.data;
-    setMensajes((prev) => [...prev, mensajeAsistente]);
+    if (mensajeAsistente) {
+      setMensajes((prev) => [...prev, mensajeAsistente]);
+    }
   }
 
   const vacio = mensajes.length === 0;

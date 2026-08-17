@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { X, Sparkles } from "lucide-react";
+import { X, Bot } from "lucide-react";
 import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
 import type { MensajeChat } from "@/lib/types";
 import { useNivelIA } from "@/lib/hooks/useNivelIA";
-import { Button } from "@/components/ui/button";
 import { BurbujaMensaje } from "@/components/chat/BurbujaMensaje";
 import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
 import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
@@ -27,7 +26,7 @@ export function PanelChat({
   placeholder,
   mensajeVacio,
   historialInicial,
-  accionExtra,
+  sugerencias,
   alCerrarIrA,
 }: {
   clienteId: string | null;
@@ -35,7 +34,7 @@ export function PanelChat({
   placeholder: string;
   mensajeVacio: string;
   historialInicial: MensajeChat[];
-  accionExtra?: { label: string; mensaje: string };
+  sugerencias?: { label: string; mensaje: string }[];
   alCerrarIrA?: string;
 }) {
   const router = useRouter();
@@ -77,6 +76,37 @@ export function PanelChat({
 
   const vacio = mensajes.length === 0;
 
+  const encabezado = (
+    <div className="flex items-center gap-2.5">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-brand-lime">
+        <Bot className="size-4 text-background" />
+      </div>
+      <div>
+        <div className="text-[13px] font-semibold text-[#F0F0F0]">{titulo}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="size-[6px] animate-pulse rounded-full bg-brand-lime" />
+          <span className="text-[11px] text-brand-lime">En línea</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const chipsSugerencias = sugerencias && sugerencias.length > 0 && (
+    <div className="flex flex-wrap gap-1.5">
+      {sugerencias.map((s) => (
+        <button
+          key={s.label}
+          type="button"
+          disabled={pending}
+          onClick={() => enviar(s.mensaje)}
+          className="rounded-full border border-border bg-[#1A1A1A] px-3 py-1.5 text-[11.5px] font-medium text-[#ccc] transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+
   const listaMensajes = (
     <>
       {mensajes.map((m) => (
@@ -88,22 +118,25 @@ export function PanelChat({
 
   const saludoVacio = (tamano: "sm" | "lg") => (
     <div
-      className={`flex flex-col items-center justify-center gap-2 text-center ${
+      className={`flex flex-col items-center justify-center gap-3 text-center ${
         tamano === "lg" ? "flex-1 px-4 py-10" : "py-8"
       }`}
     >
-      <p
-        className={
-          tamano === "lg"
-            ? "text-2xl font-semibold text-[#F0F0F0]"
-            : "text-base font-semibold text-[#F0F0F0]"
-        }
-      >
-        {SALUDO}
-      </p>
-      <p className={tamano === "lg" ? "max-w-md text-sm text-[#666]" : "max-w-xs text-[13px] text-[#666]"}>
-        {mensajeVacio}
-      </p>
+      <div>
+        <p
+          className={
+            tamano === "lg"
+              ? "text-2xl font-semibold text-[#F0F0F0]"
+              : "text-base font-semibold text-[#F0F0F0]"
+          }
+        >
+          {SALUDO}
+        </p>
+        <p className={tamano === "lg" ? "mt-2 max-w-md text-sm text-[#666]" : "mt-1 max-w-xs text-[13px] text-[#666]"}>
+          {mensajeVacio}
+        </p>
+      </div>
+      {chipsSugerencias}
     </div>
   );
 
@@ -111,7 +144,7 @@ export function PanelChat({
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 md:px-6">
-          <h2 className="text-sm font-semibold text-[#F0F0F0]">{titulo}</h2>
+          {encabezado}
           <div className="flex items-center gap-2">
             <SelectorNivelIA value={nivel} onChange={setNivel} />
             <button
@@ -133,19 +166,7 @@ export function PanelChat({
         </div>
 
         <div className="shrink-0 border-t border-border px-4 py-4 md:px-6">
-          <div className="mx-auto flex max-w-3xl flex-col gap-3">
-            {accionExtra && vacio && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pending}
-                onClick={() => enviar(accionExtra.mensaje)}
-                className="w-fit gap-1.5"
-              >
-                <Sparkles className="size-3.5" />
-                {accionExtra.label}
-              </Button>
-            )}
+          <div className="mx-auto max-w-3xl">
             <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
           </div>
         </div>
@@ -154,37 +175,25 @@ export function PanelChat({
   }
 
   return (
-    <div className="rounded-[14px] border border-border bg-card p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xs font-semibold tracking-wide text-[#555] uppercase">
-          {titulo}
-        </h2>
-        <div className="flex items-center gap-2">
-          <SelectorNivelIA value={nivel} onChange={setNivel} />
-          {accionExtra && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => enviar(accionExtra.mensaje)}
-              className="gap-1.5"
-            >
-              <Sparkles className="size-3.5" />
-              {accionExtra.label}
-            </Button>
-          )}
-        </div>
+    <div className="rounded-[14px] border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        {encabezado}
+        <SelectorNivelIA value={nivel} onChange={setNivel} />
       </div>
 
-      {vacio ? (
-        saludoVacio("sm")
-      ) : (
-        <div className="mb-4 flex max-h-[360px] flex-col gap-3 overflow-y-auto">
-          {listaMensajes}
-        </div>
-      )}
+      <div className="p-5">
+        {vacio ? (
+          saludoVacio("sm")
+        ) : (
+          <div className="mb-4 flex max-h-[360px] flex-col gap-3 overflow-y-auto">
+            {listaMensajes}
+          </div>
+        )}
 
-      <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
+        {!vacio && chipsSugerencias && <div className="mb-4">{chipsSugerencias}</div>}
+
+        <CampoMensajeChat onEnviar={enviar} pending={pending} placeholder={placeholder} />
+      </div>
     </div>
   );
 }

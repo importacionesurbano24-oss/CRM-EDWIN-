@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { differenceInCalendarDays } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import {
   getClienteConEtapa,
@@ -6,21 +7,15 @@ import {
 } from "@/lib/data/clientes";
 import { getHistorialChat } from "@/lib/data/chat";
 import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
-import { ClienteAvatar } from "@/components/pipeline/ClienteAvatar";
+import { getCotizaciones } from "@/lib/data/cotizaciones";
+import { ClienteHeaderCard } from "@/components/pipeline/ClienteHeaderCard";
+import { CotizacionActivaCard } from "@/components/pipeline/CotizacionActivaCard";
 import { BotonVolver } from "@/components/pipeline/BotonVolver";
-import { EtapaBadge } from "@/components/pipeline/EtapaBadge";
-import { BotonEnviarWhatsApp } from "@/components/clientes/BotonEnviarWhatsApp";
 import { RegistrarSeguimientoForm } from "@/components/pipeline/RegistrarSeguimientoForm";
 import { HistorialSeguimientos } from "@/components/pipeline/HistorialSeguimientos";
 import { ChatAgente } from "@/components/pipeline/ChatAgente";
 import { HiloWhatsapp } from "@/components/pipeline/HiloWhatsapp";
 import { BannerModoEnfoque } from "@/components/pipeline/BannerModoEnfoque";
-
-const ORIGEN_LABEL: Record<string, string> = {
-  "walk-in": "Llegó a la tienda",
-  referido: "Referido",
-  otro: "Otro",
-};
 
 export default async function ClienteDetallePage({
   params,
@@ -36,66 +31,71 @@ export default async function ClienteDetallePage({
   const cliente = await getClienteConEtapa(supabase, id);
   if (!cliente) notFound();
 
-  const historial = await getHistorialCliente(supabase, id);
-  const historialChat = await getHistorialChat(supabase, id);
-  const mensajesWhatsapp = await getMensajesWhatsapp(supabase, id);
+  const [historial, historialChat, mensajesWhatsapp, cotizaciones] =
+    await Promise.all([
+      getHistorialCliente(supabase, id),
+      getHistorialChat(supabase, id),
+      getMensajesWhatsapp(supabase, id),
+      getCotizaciones(supabase),
+    ]);
+
+  const cotizacionesCliente = cotizaciones.filter((c) => c.cliente_id === id);
+  const cotizacionActiva = cotizacionesCliente[0] ?? null; // ya viene ordenado por created_at desc
+  const diasSinContacto = differenceInCalendarDays(
+    new Date(),
+    new Date(historial[0]?.created_at ?? cliente.created_at)
+  );
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">
+    <div className="flex-1 scroll-smooth overflow-y-auto px-4 py-6 md:px-9 md:py-8">
       <BotonVolver texto="Volver a clientes" rutaFallback="/clientes" />
 
       {volver === "enfoque" && <BannerModoEnfoque vistos={vistos} total={total} />}
 
-      <div className="mb-8 flex flex-wrap items-center gap-4">
-        <ClienteAvatar id={cliente.id} nombre={cliente.nombre} size={52} />
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-bold tracking-tight text-white">
-            {cliente.nombre}
-          </h1>
-          <p className="mt-0.5 text-sm text-[#555]">
-            {cliente.telefono_whatsapp}
-            {cliente.email ? ` · ${cliente.email}` : ""} ·{" "}
-            {ORIGEN_LABEL[cliente.origen] ?? cliente.origen}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <EtapaBadge etapa={cliente.etapa} />
-          <BotonEnviarWhatsApp
+      <ClienteHeaderCard
+        cliente={cliente}
+        montoCotizado={cotizacionActiva ? cotizacionActiva.monto_total : null}
+        diasSinContacto={diasSinContacto}
+        totalSeguimientos={historial.length}
+      />
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[3fr_2fr] lg:items-start">
+        {/* Columna izquierda: interacción */}
+        <div className="flex flex-col gap-5">
+          <ChatAgente
             clienteId={cliente.id}
             clienteNombre={cliente.nombre}
-            telefono={cliente.telefono_whatsapp}
+            historialInicial={historialChat}
           />
-        </div>
-      </div>
 
-      <div className="mb-6">
-        <ChatAgente
-          clienteId={cliente.id}
-          clienteNombre={cliente.nombre}
-          historialInicial={historialChat}
-        />
-      </div>
+          <HiloWhatsapp clienteId={cliente.id} mensajesIniciales={mensajesWhatsapp} />
 
-      <div className="mb-6">
-        <HiloWhatsapp clienteId={cliente.id} mensajesIniciales={mensajesWhatsapp} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-[14px] border border-border bg-card p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-wide text-[#555] uppercase">
-            Registrar seguimiento
-          </h2>
-          <RegistrarSeguimientoForm
-            clienteId={cliente.id}
-            etapaActual={cliente.etapa}
-          />
+          <div
+            id="seguimiento"
+            className="scroll-mt-6 rounded-[14px] border border-border bg-card p-6"
+          >
+            <h2 className="mb-4 text-sm font-bold text-white">
+              Registrar seguimiento
+            </h2>
+            <RegistrarSeguimientoForm
+              clienteId={cliente.id}
+              etapaActual={cliente.etapa}
+            />
+          </div>
         </div>
 
-        <div className="rounded-[14px] border border-border bg-card p-6">
-          <h2 className="mb-4 text-xs font-semibold tracking-wide text-[#555] uppercase">
-            Historial
-          </h2>
-          <HistorialSeguimientos items={historial} />
+        {/* Columna derecha: registro */}
+        <div className="flex flex-col gap-5">
+          <div className="rounded-[14px] border border-border bg-card p-6">
+            <h2 className="mb-4 text-sm font-bold text-white">
+              Historial de contactos
+            </h2>
+            <HistorialSeguimientos items={historial} />
+          </div>
+
+          {cotizacionActiva && (
+            <CotizacionActivaCard cotizacion={cotizacionActiva} />
+          )}
         </div>
       </div>
     </div>

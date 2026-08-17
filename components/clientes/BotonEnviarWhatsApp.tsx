@@ -49,10 +49,10 @@ export function BotonEnviarWhatsApp({
       <button
         type="button"
         onClick={abrir}
-        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/10"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-[#25D366] bg-[#25D366]/10 px-4 py-2 text-[13px] font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/20"
       >
         <MessageCircle className="size-3.5" />
-        Enviar por WhatsApp
+        Enviar WhatsApp
       </button>
 
       <DrawerMensajeWhatsApp

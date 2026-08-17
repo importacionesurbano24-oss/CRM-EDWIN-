@@ -61,10 +61,10 @@ export default async function EnfoquePage({
             Terminaste tus tareas de hoy
           </h1>
           <Link
-            href="/dashboard"
+            href="/inicio"
             className="mt-2 text-sm font-medium text-primary hover:underline"
           >
-            Ir al dashboard
+            Ir a inicio
           </Link>
         </div>
       ) : item.tipo === "briefing" ? (

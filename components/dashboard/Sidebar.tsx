@@ -13,7 +13,7 @@ export function Sidebar({ pendientesHoy, userEmail }: SidebarProps) {
   return (
     <aside className="flex w-[220px] min-w-[220px] flex-col border-r border-sidebar-border bg-sidebar">
       <div className="border-b border-sidebar-border px-5 py-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Link href="/inicio" className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M3 14L9 4L15 14H3Z" fill="#0A0A0A" />

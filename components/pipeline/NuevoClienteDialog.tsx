@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Upload } from "lucide-react";
 import { actionCrearCliente } from "@/app/actions/clientes.actions";
@@ -27,12 +28,23 @@ import { ETAPA_META, ETAPA_ORDEN } from "@/lib/ui/etapa";
 import type { Etapa } from "@/lib/types";
 
 export function NuevoClienteDialog() {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [open, setOpen] = useState(() => searchParams.get("nuevo") === "1");
   const [pending, startTransition] = useTransition();
   const [etapa, setEtapa] = useState<Etapa>("prospecto");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Limpia ?nuevo=1 de la URL una vez que ya abrió el modal — así un
+  // refresh de la página no lo vuelve a abrir solo.
+  useEffect(() => {
+    if (searchParams.get("nuevo") === "1") {
+      router.replace("/clientes", { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function resetForm() {
     setEtapa("prospecto");

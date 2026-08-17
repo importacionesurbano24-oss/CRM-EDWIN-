@@ -9,7 +9,7 @@ import { LayoutGrid, Users, BarChart3, ListChecks, GraduationCap, MessageCircle 
 // del cliente (incluida la compra) desde "Registrar seguimiento" en
 // /clientes/[id]. No se borró el código ni los datos.
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutGrid },
+  { href: "/inicio", label: "Inicio", icon: LayoutGrid },
   { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/clientes", label: "Clientes", icon: Users },

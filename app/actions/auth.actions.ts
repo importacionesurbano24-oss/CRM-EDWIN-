@@ -30,7 +30,7 @@ export async function actionLogin(
     return { data: null, error: "Correo o contraseña incorrectos." };
   }
 
-  redirect("/dashboard");
+  redirect("/inicio");
 }
 
 export async function actionLogout(): Promise<void> {

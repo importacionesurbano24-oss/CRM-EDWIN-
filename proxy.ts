@@ -68,7 +68,7 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/") {
     const url = request.nextUrl.clone();
-    url.pathname = user ? "/dashboard" : "/login";
+    url.pathname = user ? "/inicio" : "/login";
     return NextResponse.redirect(url);
   }
 
@@ -80,7 +80,7 @@ export async function proxy(request: NextRequest) {
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/inicio";
     return NextResponse.redirect(url);
   }
 

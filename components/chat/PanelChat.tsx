@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { X, Bot } from "lucide-react";
-import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
-import type { MensajeChat } from "@/lib/types";
+import { actionEnviarMensajeChat, type MensajeChatConAccion } from "@/app/actions/chat.actions";
 import type { MensajeConversacion } from "@/lib/claude/chat";
 import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { BurbujaMensaje } from "@/components/chat/BurbujaMensaje";
@@ -44,7 +43,7 @@ export function PanelChat({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
+  const [mensajes, setMensajes] = useState<MensajeChatConAccion[]>([]);
   const [idAnimando, setIdAnimando] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
@@ -83,6 +82,7 @@ export function PanelChat({
         rol: "user",
         mensaje,
         created_at: new Date().toISOString(),
+        mensajeParaCliente: null,
       },
     ]);
 
@@ -146,6 +146,7 @@ export function PanelChat({
           mensaje={m}
           animar={m.id === idAnimando}
           clienteId={clienteId}
+          mensajeParaCliente={m.mensajeParaCliente}
         />
       ))}
       {pending && <p className="text-xs text-[#555]">Pensando...</p>}

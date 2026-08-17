@@ -12,12 +12,15 @@ export function BurbujaMensaje({
   mensaje,
   animar = false,
   clienteId = null,
+  mensajeParaCliente = null,
 }: {
   mensaje: Pick<MensajeChat, "id" | "rol" | "mensaje">;
   /** Si es true, el texto se revela como si el agente lo estuviera escribiendo. */
   animar?: boolean;
-  /** Si viene (chat de un cliente puntual, no el de negocio), se ofrece enviar este mensaje por WhatsApp. */
+  /** Chat de un cliente puntual (no el de negocio) — necesario para armar el link de WhatsApp. */
   clienteId?: string | null;
+  /** El agente marca esto cuando SU respuesta es (o incluye) un mensaje listo para el cliente — null en cualquier otro caso (preguntas, análisis, saludos). El botón de WhatsApp solo aparece cuando viene. */
+  mensajeParaCliente?: string | null;
 }) {
   const esUsuario = mensaje.rol === "user";
   const texto = mensaje.mensaje;
@@ -70,9 +73,9 @@ export function BurbujaMensaje({
             <span className="ml-0.5 inline-block h-[15px] w-[2px] translate-y-[2px] animate-pulse bg-primary" />
           )}
         </div>
-        {clienteId && !escribiendo && (
+        {clienteId && mensajeParaCliente && !escribiendo && (
           <Link
-            href={`/whatsapp?cliente=${clienteId}&mensaje=${encodeURIComponent(texto)}`}
+            href={`/whatsapp?cliente=${clienteId}&mensaje=${encodeURIComponent(mensajeParaCliente)}`}
             className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#25D366] bg-[#25D366]/10 px-3 py-1.5 text-[12px] font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/20"
           >
             <MessageCircle className="size-3.5" />

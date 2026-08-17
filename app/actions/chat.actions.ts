@@ -18,6 +18,11 @@ import type { ActionResult } from "@/lib/action-result";
 import type { MensajeChat } from "@/lib/types";
 import type { NivelIA } from "@/lib/claude/modelos";
 
+export interface MensajeChatConAccion extends MensajeChat {
+  /** Si esta respuesta incluye un mensaje listo para el cliente, va acá — null si no aplica. */
+  mensajeParaCliente: string | null;
+}
+
 export async function actionEnviarMensajeChat(
   clienteId: string | null,
   mensaje: string,
@@ -26,7 +31,7 @@ export async function actionEnviarMensajeChat(
    * cliente los manda porque ya no se guarda/relee un historial persistente;
    * cada apertura del chat arranca en blanco. */
   historialPrevio: MensajeConversacion[]
-): Promise<ActionResult<MensajeChat>> {
+): Promise<ActionResult<MensajeChatConAccion>> {
   const parsed = EnviarMensajeSchema.safeParse({ clienteId, mensaje });
   if (!parsed.success) {
     return { data: null, error: parsed.error.issues[0].message };
@@ -64,7 +69,10 @@ export async function actionEnviarMensajeChat(
     ]);
 
     if (!cliente) {
-      return { data: mensajeUsuario, error: "Cliente no encontrado." };
+      return {
+        data: { ...mensajeUsuario, mensajeParaCliente: null },
+        error: "Cliente no encontrado.",
+      };
     }
 
     contextoEspecifico = construirContextoCliente({
@@ -100,14 +108,14 @@ export async function actionEnviarMensajeChat(
       .insert({
         cliente_id: parsed.data.clienteId,
         rol: "assistant",
-        mensaje: respuesta,
+        mensaje: respuesta.texto,
       })
       .select()
       .single();
 
     if (errorAsistente || !mensajeAsistente) {
       return {
-        data: mensajeUsuario,
+        data: { ...mensajeUsuario, mensajeParaCliente: null },
         error: errorAsistente?.message ?? "No se pudo guardar la respuesta.",
       };
     }
@@ -118,11 +126,14 @@ export async function actionEnviarMensajeChat(
       revalidatePath("/dashboard");
     }
 
-    return { data: mensajeAsistente, error: null };
+    return {
+      data: { ...mensajeAsistente, mensajeParaCliente: respuesta.mensajeParaCliente },
+      error: null,
+    };
   } catch (error) {
     console.error("actionEnviarMensajeChat:", error);
     return {
-      data: mensajeUsuario,
+      data: { ...mensajeUsuario, mensajeParaCliente: null },
       error: error instanceof Error ? error.message : "No se pudo generar la respuesta.",
     };
   }

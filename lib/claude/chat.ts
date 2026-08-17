@@ -1,5 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { z } from "zod";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
 import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
@@ -18,11 +20,28 @@ Reglas estrictas:
 - Nunca inventes precios, fechas, productos ni datos que no estén explícitamente en el contexto que te paso.
 - Si te preguntan algo de catálogo, garantías u objeciones y no está en la información del negocio que te paso, dilo honestamente en vez de inventar.
 - Responde en español, de forma directa y breve — esto es un chat, no un informe.
-- Cuando te pidan redactar un mensaje para un cliente, responde SOLO con el mensaje listo para copiar y pegar. No agregues una sección explicando por qué funciona, ni lista de razones, ni termines preguntando "¿te gusta así?" o "¿le cambio algo?" — si Edwin quiere ajustes o una explicación, te los va a pedir en el siguiente mensaje.`;
+- Cuando te pidan redactar un mensaje para un cliente, responde SOLO con el mensaje listo para copiar y pegar. No agregues una sección explicando por qué funciona, ni lista de razones, ni termines preguntando "¿te gusta así?" o "¿le cambio algo?" — si Edwin quiere ajustes o una explicación, te los va a pedir en el siguiente mensaje.
+- Además de tu "respuesta" (lo que ve Edwin en el chat), completa "mensaje_para_cliente": si tu respuesta ES o INCLUYE un mensaje listo para copiar y enviarle al cliente por WhatsApp, poné ahí SOLO ese mensaje tal cual debe enviarse (sin nada de tu comentario alrededor). Si tu respuesta es una pregunta a Edwin, un análisis, una estrategia, un saludo, o cualquier cosa que no sea un mensaje literal para el cliente, poné null.`;
+
+const RespuestaChatSchema = z.object({
+  respuesta: z.string().describe("La respuesta completa que ve Edwin en el chat."),
+  mensaje_para_cliente: z
+    .string()
+    .nullable()
+    .describe(
+      "SOLO el texto del mensaje listo para enviarle al cliente por WhatsApp, si la respuesta incluye uno. null si no aplica (preguntas, análisis, saludos, etc.)."
+    ),
+});
 
 export interface MensajeConversacion {
   rol: "user" | "assistant";
   mensaje: string;
+}
+
+export interface RespuestaChat {
+  texto: string;
+  /** Mensaje listo para enviar al cliente por WhatsApp, o null si esta respuesta no es un mensaje para el cliente. */
+  mensajeParaCliente: string | null;
 }
 
 let cachedClient: Anthropic | null = null;
@@ -43,7 +62,7 @@ export async function responderChat(
   contextoEspecifico: string,
   fragmentos: FragmentoConocimiento[],
   nivel: NivelIA = NIVEL_IA_POR_DEFECTO
-): Promise<string> {
+): Promise<RespuestaChat> {
   const system = [
     SYSTEM_PROMPT_BASE,
     "",
@@ -57,19 +76,21 @@ export async function responderChat(
       : []),
   ].join("\n");
 
-  const response = await getClient().messages.create({
+  const response = await getClient().messages.parse({
     model: MODELOS_IA[nivel],
     max_tokens: 1024,
     thinking: { type: "disabled" },
+    output_config: { format: zodOutputFormat(RespuestaChatSchema) },
     system,
     messages: historial.map((m) => ({ role: m.rol, content: m.mensaje })),
   });
 
-  const bloqueTexto = response.content.find(
-    (bloque): bloque is Anthropic.TextBlock => bloque.type === "text"
-  );
-  if (!bloqueTexto) {
-    throw new Error("El agente no devolvió una respuesta de texto.");
+  if (!response.parsed_output) {
+    throw new Error("El agente no devolvió una respuesta válida.");
   }
-  return bloqueTexto.text;
+
+  return {
+    texto: response.parsed_output.respuesta,
+    mensajeParaCliente: response.parsed_output.mensaje_para_cliente,
+  };
 }

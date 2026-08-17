@@ -12,9 +12,11 @@ import {
 } from "@/app/actions/whatsapp.actions";
 import { dentroDeVentana24h } from "@/lib/whatsapp/ventana";
 import type { ClienteConEtapa, MensajeWhatsapp } from "@/lib/types";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { BurbujaWhatsapp } from "@/components/whatsapp/BurbujaWhatsapp";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 
 export function PanelConversacionWhatsapp({
   cliente,
@@ -32,6 +34,7 @@ export function PanelConversacionWhatsapp({
   const [vieneDelAgente, setVieneDelAgente] = useState(Boolean(borradorInicial));
   const [sugiriendo, startSugerir] = useTransition();
   const [enviando, startEnviar] = useTransition();
+  const [nivel, setNivel] = useNivelIA();
   const finRef = useRef<HTMLDivElement>(null);
 
   const dentroVentana = dentroDeVentana24h(mensajes);
@@ -52,7 +55,7 @@ export function PanelConversacionWhatsapp({
   async function sugerir() {
     if (!cliente) return;
     startSugerir(async () => {
-      const result = await actionSugerirRespuestaWhatsapp(cliente.id);
+      const result = await actionSugerirRespuestaWhatsapp(cliente.id, nivel);
       if (!result.data) {
         toast.error(result.error);
         return;
@@ -152,7 +155,7 @@ export function PanelConversacionWhatsapp({
             Este mensaje lo generó el agente — revísalo antes de enviar.
           </p>
         )}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -163,6 +166,7 @@ export function PanelConversacionWhatsapp({
             <Sparkles className="size-3.5" />
             {sugiriendo ? "Pensando..." : "Sugerir respuesta"}
           </Button>
+          <SelectorNivelIA value={nivel} onChange={setNivel} />
           {dentroVentana ? (
             <Button size="sm" disabled={enviando || !borrador.trim()} onClick={enviar} className="gap-1.5">
               <Send className="size-3.5" />

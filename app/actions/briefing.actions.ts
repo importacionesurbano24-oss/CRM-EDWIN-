@@ -9,6 +9,7 @@ import {
 } from "@/lib/services/briefing.service";
 import type { ActionResult } from "@/lib/action-result";
 import type { Seguimiento } from "@/lib/types";
+import type { NivelIA } from "@/lib/claude/modelos";
 
 export interface TextoBriefing {
   clienteId: string;
@@ -22,10 +23,11 @@ export interface TextoBriefing {
  * antes de llamar esto — este action solo mejora la redacción.
  */
 export async function actionRedactarBriefing(
-  alertas: AlertaBriefing[]
+  alertas: AlertaBriefing[],
+  nivel?: NivelIA
 ): Promise<ActionResult<TextoBriefing[]>> {
   try {
-    const mapa = await redactarBriefing(alertas);
+    const mapa = await redactarBriefing(alertas, nivel);
     const textos: TextoBriefing[] = alertas
       .filter((a) => mapa.has(a.clienteId))
       .map((a) => {

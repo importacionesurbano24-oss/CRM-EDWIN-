@@ -17,10 +17,12 @@ import {
 import { EnviarMensajeSchema } from "@/lib/validators/chat.schema";
 import type { ActionResult } from "@/lib/action-result";
 import type { MensajeChat } from "@/lib/types";
+import type { NivelIA } from "@/lib/claude/modelos";
 
 export async function actionEnviarMensajeChat(
   clienteId: string | null,
-  mensaje: string
+  mensaje: string,
+  nivel?: NivelIA
 ): Promise<ActionResult<MensajeChat>> {
   const parsed = EnviarMensajeSchema.safeParse({ clienteId, mensaje });
   if (!parsed.success) {
@@ -87,7 +89,8 @@ export async function actionEnviarMensajeChat(
     const respuesta = await responderChat(
       historialCompleto,
       contextoEspecifico,
-      fragmentos
+      fragmentos,
+      nivel
     );
 
     const { data: mensajeAsistente, error: errorAsistente } = await supabase

@@ -21,6 +21,7 @@ export const AnalizarCargaMasivaSchema = z.object({
       "Formato no soportado. Usa PDF, Excel (.xlsx), imagen (JPG/PNG/WEBP) o texto (.txt/.csv)."
     ),
   instruccion: z.string().trim().min(3, "Escribe qué quieres hacer con este archivo."),
+  nivel: z.enum(["basico", "avanzado"]).optional(),
 });
 
 export type AnalizarCargaMasivaInput = z.infer<typeof AnalizarCargaMasivaSchema>;

@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { actionSugerirProximaAccion } from "@/app/actions/agente.actions";
 import type { Sugerencia } from "@/lib/claude/agente";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 import {
   Dialog,
   DialogContent,
@@ -23,10 +25,11 @@ export function BotonMensajeIA({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [sugerencia, setSugerencia] = useState<Sugerencia | null>(null);
+  const [nivel, setNivel] = useNivelIA();
 
   function generar() {
     startTransition(async () => {
-      const result = await actionSugerirProximaAccion(clienteId);
+      const result = await actionSugerirProximaAccion(clienteId, nivel);
       if (result.data) {
         setSugerencia(result.data);
       } else {
@@ -66,6 +69,8 @@ export function BotonMensajeIA({
               Mensaje de seguimiento — {clienteNombre}
             </DialogTitle>
           </DialogHeader>
+
+          <SelectorNivelIA value={nivel} onChange={setNivel} />
 
           {pending && (
             <p className="text-sm text-[#555]">Generando mensaje...</p>

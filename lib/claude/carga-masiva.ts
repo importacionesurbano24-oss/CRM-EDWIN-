@@ -2,6 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
 
 export type ContenidoArchivo =
   | { tipo: "pdf"; base64: string }
@@ -38,8 +39,9 @@ export async function analizarCargaMasiva(params: {
   catalogoActual: string;
   instruccion: string;
   archivo: ContenidoArchivo;
+  nivel?: NivelIA;
 }): Promise<AnalisisCatalogo> {
-  const { catalogoActual, instruccion, archivo } = params;
+  const { catalogoActual, instruccion, archivo, nivel = NIVEL_IA_POR_DEFECTO } = params;
 
   const bloqueArchivo: Anthropic.ContentBlockParam =
     archivo.tipo === "pdf"
@@ -63,11 +65,12 @@ export async function analizarCargaMasiva(params: {
   ].join("\n");
 
   const response = await getClient().messages.parse({
-    model: "claude-sonnet-5",
+    model: MODELOS_IA[nivel],
     max_tokens: 8192,
     thinking: { type: "disabled" },
     output_config: {
-      effort: "medium",
+      // El parámetro "effort" no existe en Haiku 4.5 — solo se manda con el modelo avanzado (Sonnet).
+      ...(nivel === "avanzado" && { effort: "medium" as const }),
       format: zodOutputFormat(AnalisisCatalogoSchema),
     },
     system: SYSTEM_PROMPT,

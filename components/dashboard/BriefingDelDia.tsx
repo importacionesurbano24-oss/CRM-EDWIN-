@@ -12,7 +12,9 @@ import {
   type AlertaBriefing,
 } from "@/lib/services/briefing.service";
 import { ETAPA_META } from "@/lib/ui/etapa";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 
 const COLOR_REGLA: Record<AlertaBriefing["regla"], string> = {
   whatsapp_sin_responder: "#25D366",
@@ -40,12 +42,13 @@ export function BriefingDelDia({
   const [ocultos, setOcultos] = useState<Set<string>>(new Set());
   const [ejecutando, setEjecutando] = useState<Set<string>>(new Set());
   const [mejorando, setMejorando] = useState(false);
+  const [nivel, setNivel] = useNivelIA();
 
   const visibles = items.filter((item) => !ocultos.has(item.alerta.clienteId));
 
   async function mejorarConIA() {
     setMejorando(true);
-    const result = await actionRedactarBriefing(items.map((i) => i.alerta));
+    const result = await actionRedactarBriefing(items.map((i) => i.alerta), nivel);
     setMejorando(false);
 
     if (!result.data) {
@@ -95,16 +98,19 @@ export function BriefingDelDia({
             Briefing del día
           </h2>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={mejorando}
-          onClick={mejorarConIA}
-          className="gap-1.5"
-        >
-          <Sparkles className="size-3.5" />
-          {mejorando ? "Redactando..." : "Mejorar con IA"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <SelectorNivelIA value={nivel} onChange={setNivel} />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={mejorando}
+            onClick={mejorarConIA}
+            className="gap-1.5"
+          >
+            <Sparkles className="size-3.5" />
+            {mejorando ? "Redactando..." : "Mejorar con IA"}
+          </Button>
+        </div>
       </div>
 
       {visibles.length === 0 && (

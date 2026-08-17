@@ -8,9 +8,11 @@ import { getMensajesWhatsapp } from "@/lib/data/whatsapp";
 import { sugerirProximaAccion, type Sugerencia } from "@/lib/claude/agente";
 import { leerContenidoUrl } from "@/lib/utils/leer-url";
 import type { ActionResult } from "@/lib/action-result";
+import type { NivelIA } from "@/lib/claude/modelos";
 
 export async function actionSugerirProximaAccion(
-  clienteId: string
+  clienteId: string,
+  nivel?: NivelIA
 ): Promise<ActionResult<Sugerencia>> {
   const supabase = await createClient();
 
@@ -32,14 +34,17 @@ export async function actionSugerirProximaAccion(
     : null;
 
   try {
-    const sugerencia = await sugerirProximaAccion({
-      cliente,
-      historial,
-      cotizaciones: cotizaciones.filter((c) => c.cliente_id === clienteId),
-      pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
-      cotizacionExterna,
-      mensajesWhatsapp,
-    });
+    const sugerencia = await sugerirProximaAccion(
+      {
+        cliente,
+        historial,
+        cotizaciones: cotizaciones.filter((c) => c.cliente_id === clienteId),
+        pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
+        cotizacionExterna,
+        mensajesWhatsapp,
+      },
+      nivel
+    );
     return { data: sugerencia, error: null };
   } catch (error) {
     console.error("actionSugerirProximaAccion:", error);

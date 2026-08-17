@@ -2,6 +2,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
+import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
 
 // Prompt base compartido por los dos chats (cliente y negocio). Cada
 // llamada le agrega su propio bloque de contexto (ver
@@ -39,7 +40,8 @@ function getClient(): Anthropic {
 export async function responderChat(
   historial: MensajeConversacion[],
   contextoEspecifico: string,
-  fragmentos: FragmentoConocimiento[]
+  fragmentos: FragmentoConocimiento[],
+  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
 ): Promise<string> {
   const system = [
     SYSTEM_PROMPT_BASE,
@@ -55,7 +57,7 @@ export async function responderChat(
   ].join("\n");
 
   const response = await getClient().messages.create({
-    model: "claude-sonnet-5",
+    model: MODELOS_IA[nivel],
     max_tokens: 1024,
     thinking: { type: "disabled" },
     system,

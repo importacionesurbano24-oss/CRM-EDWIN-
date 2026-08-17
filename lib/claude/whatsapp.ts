@@ -6,6 +6,7 @@ import type { MensajeWhatsapp } from "@/lib/types";
 import { formatearContexto, type ContextoCliente } from "@/lib/claude/agente";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
+import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
 
 // Mismo criterio que lib/claude/chat.ts y lib/claude/agente.ts: prompt
 // como constante (no variable de entorno), claude-sonnet-5,
@@ -29,7 +30,8 @@ function getClient(): Anthropic {
 export async function sugerirRespuestaWhatsapp(
   contextoCliente: ContextoCliente,
   hilo: Pick<MensajeWhatsapp, "direccion" | "contenido" | "created_at">[],
-  fragmentos: FragmentoConocimiento[] = []
+  fragmentos: FragmentoConocimiento[] = [],
+  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
 ): Promise<string> {
   const contextoTexto = formatearContexto(contextoCliente);
 
@@ -56,7 +58,7 @@ export async function sugerirRespuestaWhatsapp(
   ].join("\n");
 
   const response = await getClient().messages.create({
-    model: "claude-sonnet-5",
+    model: MODELOS_IA[nivel],
     max_tokens: 512,
     thinking: { type: "disabled" },
     system: SYSTEM_PROMPT,

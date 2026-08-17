@@ -8,10 +8,12 @@ import {
   type AnalisisCargaMasivaResult,
 } from "@/app/actions/carga-masiva.actions";
 import { actionGuardarSeccionConocimiento } from "@/app/actions/conocimiento.actions";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 
 function formatearTamano(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -28,6 +30,7 @@ export function CargaMasivaCatalogo() {
   const [catalogoEditado, setCatalogoEditado] = useState("");
   const [analizando, startAnalisis] = useTransition();
   const [guardando, startGuardado] = useTransition();
+  const [nivel, setNivel] = useNivelIA();
 
   function soltarArchivo(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -45,6 +48,7 @@ export function CargaMasivaCatalogo() {
       const formData = new FormData();
       formData.set("archivo", archivo);
       formData.set("instruccion", instruccion);
+      formData.set("nivel", nivel);
       const result = await actionAnalizarCargaMasiva(formData);
 
       if (!result.data) {
@@ -158,9 +162,12 @@ export function CargaMasivaCatalogo() {
             rows={2}
             placeholder='Ej: "agrega estos productos nuevos" o "actualiza los precios con este archivo"'
           />
-          <Button onClick={analizar} disabled={analizando} className="w-fit">
-            {analizando ? "Analizando..." : "Analizar archivo"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={analizar} disabled={analizando} className="w-fit">
+              {analizando ? "Analizando..." : "Analizar archivo"}
+            </Button>
+            <SelectorNivelIA value={nivel} onChange={setNivel} />
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

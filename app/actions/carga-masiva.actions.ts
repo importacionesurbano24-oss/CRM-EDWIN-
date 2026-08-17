@@ -20,13 +20,14 @@ export async function actionAnalizarCargaMasiva(
   const parsed = AnalizarCargaMasivaSchema.safeParse({
     archivo: formData.get("archivo"),
     instruccion: formData.get("instruccion"),
+    nivel: formData.get("nivel") || undefined,
   });
 
   if (!parsed.success) {
     return { data: null, error: parsed.error.issues[0].message };
   }
 
-  const { archivo, instruccion } = parsed.data;
+  const { archivo, instruccion, nivel } = parsed.data;
   const supabase = await createClient();
 
   const {
@@ -64,6 +65,7 @@ export async function actionAnalizarCargaMasiva(
       catalogoActual,
       instruccion,
       archivo: contenidoArchivo,
+      nivel,
     });
 
     return {

@@ -10,8 +10,10 @@ import {
 } from "@/app/actions/whatsapp.actions";
 import { dentroDeVentana24h } from "@/lib/whatsapp/ventana";
 import type { MensajeWhatsapp } from "@/lib/types";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
 import { BurbujaWhatsapp } from "@/components/whatsapp/BurbujaWhatsapp";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 
 export function HiloWhatsapp({
   clienteId,
@@ -24,6 +26,7 @@ export function HiloWhatsapp({
   const [sugerencia, setSugerencia] = useState<string | null>(null);
   const [sugiriendo, setSugiriendo] = useState(false);
   const [enviando, startEnviar] = useTransition();
+  const [nivel, setNivel] = useNivelIA();
   const finRef = useRef<HTMLDivElement>(null);
 
   const dentroVentana = dentroDeVentana24h(mensajes);
@@ -34,7 +37,7 @@ export function HiloWhatsapp({
 
   async function generarSugerencia() {
     setSugiriendo(true);
-    const result = await actionSugerirRespuestaWhatsapp(clienteId);
+    const result = await actionSugerirRespuestaWhatsapp(clienteId, nivel);
     setSugiriendo(false);
     if (!result.data) {
       toast.error(result.error);
@@ -83,16 +86,19 @@ export function HiloWhatsapp({
           <MessageCircle className="size-3.5" />
           WhatsApp
         </h2>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={sugiriendo}
-          onClick={generarSugerencia}
-          className="gap-1.5"
-        >
-          <Sparkles className="size-3.5" />
-          {sugiriendo ? "Pensando..." : "Sugerir respuesta"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <SelectorNivelIA value={nivel} onChange={setNivel} />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={sugiriendo}
+            onClick={generarSugerencia}
+            className="gap-1.5"
+          >
+            <Sparkles className="size-3.5" />
+            {sugiriendo ? "Pensando..." : "Sugerir respuesta"}
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4 flex max-h-[300px] flex-col gap-2.5 overflow-y-auto">

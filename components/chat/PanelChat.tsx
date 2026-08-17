@@ -6,9 +6,11 @@ import { toast } from "sonner";
 import { X, Sparkles } from "lucide-react";
 import { actionEnviarMensajeChat } from "@/app/actions/chat.actions";
 import type { MensajeChat } from "@/lib/types";
+import { useNivelIA } from "@/lib/hooks/useNivelIA";
 import { Button } from "@/components/ui/button";
 import { BurbujaMensaje } from "@/components/chat/BurbujaMensaje";
 import { CampoMensajeChat } from "@/components/chat/CampoMensajeChat";
+import { SelectorNivelIA } from "@/components/shared/SelectorNivelIA";
 
 const SALUDO = "¿En qué puedo ayudar, Dormiluna?";
 
@@ -40,6 +42,7 @@ export function PanelChat({
   const [mensajes, setMensajes] = useState(historialInicial);
   const [pending, setPending] = useState(false);
   const [expandido, setExpandido] = useState(false);
+  const [nivel, setNivel] = useNivelIA();
 
   function cerrar() {
     setExpandido(false);
@@ -61,7 +64,7 @@ export function PanelChat({
       },
     ]);
 
-    const result = await actionEnviarMensajeChat(clienteId, mensaje);
+    const result = await actionEnviarMensajeChat(clienteId, mensaje, nivel);
     setPending(false);
 
     if (!result.data) {
@@ -109,13 +112,16 @@ export function PanelChat({
       <div className="fixed inset-0 z-50 flex flex-col bg-background">
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 md:px-6">
           <h2 className="text-sm font-semibold text-[#F0F0F0]">{titulo}</h2>
-          <button
-            type="button"
-            onClick={cerrar}
-            className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
-          >
-            <X className="size-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <SelectorNivelIA value={nivel} onChange={setNivel} />
+            <button
+              type="button"
+              onClick={cerrar}
+              className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6 md:px-6">
@@ -153,18 +159,21 @@ export function PanelChat({
         <h2 className="text-xs font-semibold tracking-wide text-[#555] uppercase">
           {titulo}
         </h2>
-        {accionExtra && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pending}
-            onClick={() => enviar(accionExtra.mensaje)}
-            className="gap-1.5"
-          >
-            <Sparkles className="size-3.5" />
-            {accionExtra.label}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <SelectorNivelIA value={nivel} onChange={setNivel} />
+          {accionExtra && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => enviar(accionExtra.mensaje)}
+              className="gap-1.5"
+            >
+              <Sparkles className="size-3.5" />
+              {accionExtra.label}
+            </Button>
+          )}
+        </div>
       </div>
 
       {vacio ? (

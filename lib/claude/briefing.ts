@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { AlertaBriefing } from "@/lib/services/briefing.service";
+import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
 
 // Prompt del sistema como constante (no como variable de entorno), según CLAUDE.md.
 const SYSTEM_PROMPT = `Eres el asistente que arma el resumen matutino ("Daily Briefing") de PasoCRM para Dormiluna, una tienda de colchones en Colombia. Cada mañana Edwin (el vendedor) revisa esta lista antes de empezar a llamar clientes.
@@ -45,7 +46,8 @@ function getClient(): Anthropic {
  * atrapa errores, los deja subir.
  */
 export async function redactarBriefing(
-  alertas: AlertaBriefing[]
+  alertas: AlertaBriefing[],
+  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
 ): Promise<Map<string, { situacion: string; accionSugerida: string }>> {
   if (alertas.length === 0) return new Map();
 
@@ -58,11 +60,12 @@ export async function redactarBriefing(
   }));
 
   const response = await getClient().messages.parse({
-    model: "claude-sonnet-5",
+    model: MODELOS_IA[nivel],
     max_tokens: 2048,
     thinking: { type: "disabled" },
     output_config: {
-      effort: "low",
+      // El parámetro "effort" no existe en Haiku 4.5 — solo se manda con el modelo avanzado (Sonnet).
+      ...(nivel === "avanzado" && { effort: "low" as const }),
       format: zodOutputFormat(BriefingSchema),
     },
     system: SYSTEM_PROMPT,

@@ -13,9 +13,11 @@ import { dentroDeVentana24h } from "@/lib/whatsapp/ventana";
 import { EnviarWhatsappSchema } from "@/lib/validators/whatsapp.schema";
 import type { ActionResult } from "@/lib/action-result";
 import type { MensajeWhatsapp } from "@/lib/types";
+import type { NivelIA } from "@/lib/claude/modelos";
 
 export async function actionSugerirRespuestaWhatsapp(
-  clienteId: string
+  clienteId: string,
+  nivel?: NivelIA
 ): Promise<ActionResult<string>> {
   const supabase = await createClient();
 
@@ -45,7 +47,8 @@ export async function actionSugerirRespuestaWhatsapp(
         pedidos: pedidos.filter((p) => p.cliente_id === clienteId),
       },
       hilo,
-      fragmentos
+      fragmentos,
+      nivel
     );
     return { data: sugerencia, error: null };
   } catch (error) {

@@ -167,13 +167,24 @@ export function PanelChat({
           {encabezado}
           <div className="flex items-center gap-2">
             <SelectorNivelIA value={nivel} onChange={setNivel} />
-            <button
-              type="button"
-              onClick={cerrar}
-              className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
+            {alCerrarIrA ? (
+              <button
+                type="button"
+                onClick={cerrar}
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
+              >
+                <X className="size-3.5" />
+                Volver
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={cerrar}
+                className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
         </div>
 

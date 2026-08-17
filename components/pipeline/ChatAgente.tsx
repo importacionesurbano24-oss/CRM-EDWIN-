@@ -21,7 +21,6 @@ export function ChatAgente({
         { label: "¿Por qué no ha respondido?", mensaje: "¿Por qué crees que este cliente no ha respondido?" },
         { label: "Sugerir próxima acción", mensaje: "¿Qué debería hacer ahora con este cliente?" },
       ]}
-      alCerrarIrA="/inicio"
     />
   );
 }

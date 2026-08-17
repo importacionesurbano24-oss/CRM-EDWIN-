@@ -16,7 +16,6 @@ export function ChatNegocio({
         placeholder="Pregúntale algo a tu negocio..."
         mensajeVacio="Pregúntale al agente sobre tu negocio: cuántos leads tienes, quién lleva más tiempo sin responder, cuántas ventas cerraste este mes, o pídele un mensaje para publicar en redes."
         mensajeInicial={preguntaInicial}
-        alCerrarIrA="/inicio"
       />
     </div>
   );

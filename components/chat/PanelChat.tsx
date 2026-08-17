@@ -17,9 +17,8 @@ const SALUDO = "¿En qué puedo ayudar, Dormiluna?";
 /**
  * UI y estado compartidos por los dos chats (ficha de cliente y negocio).
  * Empieza como tarjeta chica embebida; se expande a pantalla completa
- * estilo ChatGPT recién cuando se envía el primer mensaje (no al enfocar
- * el campo). Si `alCerrarIrA` viene definido, cerrar el chat expandido
- * navega ahí en vez de solo volver a la tarjeta chica.
+ * estilo ChatGPT recién cuando se envía el primer mensaje. Cerrar siempre
+ * vuelve a la tarjeta chica en la misma página — nunca navega a otro lado.
  *
  * Cada apertura arranca en blanco a propósito — no se lee historial
  * guardado. El "recuerdo" del agente durante la sesión es justamente lo
@@ -33,7 +32,6 @@ export function PanelChat({
   placeholder,
   mensajeVacio,
   sugerencias,
-  alCerrarIrA,
   mensajeInicial,
 }: {
   clienteId: string | null;
@@ -41,7 +39,6 @@ export function PanelChat({
   placeholder: string;
   mensajeVacio: string;
   sugerencias?: { label: string; mensaje: string }[];
-  alCerrarIrA?: string;
   /** Si viene (ej. desde ?pregunta= en la URL), se envía solo una vez al montar. */
   mensajeInicial?: string;
 }) {
@@ -64,7 +61,6 @@ export function PanelChat({
 
   function cerrar() {
     setExpandido(false);
-    if (alCerrarIrA) router.push(alCerrarIrA);
   }
 
   async function enviar(mensaje: string) {
@@ -145,7 +141,12 @@ export function PanelChat({
   const listaMensajes = (
     <>
       {mensajes.map((m) => (
-        <BurbujaMensaje key={m.id} mensaje={m} animar={m.id === idAnimando} />
+        <BurbujaMensaje
+          key={m.id}
+          mensaje={m}
+          animar={m.id === idAnimando}
+          clienteId={clienteId}
+        />
       ))}
       {pending && <p className="text-xs text-[#555]">Pensando...</p>}
     </>
@@ -182,24 +183,13 @@ export function PanelChat({
           {encabezado}
           <div className="flex items-center gap-2">
             <SelectorNivelIA value={nivel} onChange={setNivel} />
-            {alCerrarIrA ? (
-              <button
-                type="button"
-                onClick={cerrar}
-                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
-              >
-                <X className="size-3.5" />
-                Volver
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={cerrar}
-                className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
-              >
-                <X className="size-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={cerrar}
+              className="flex size-8 items-center justify-center rounded-full text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-foreground"
+            >
+              <X className="size-4" />
+            </button>
           </div>
         </div>
 

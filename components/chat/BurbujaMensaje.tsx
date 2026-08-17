@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, MessageCircle } from "lucide-react";
 import type { MensajeChat } from "@/lib/types";
 
 const MS_POR_CARACTER = 12; // ritmo base del "tipeo"
@@ -10,10 +11,13 @@ const DURACION_MAXIMA_MS = 2200; // tope para que un mensaje largo no tarde una 
 export function BurbujaMensaje({
   mensaje,
   animar = false,
+  clienteId = null,
 }: {
   mensaje: Pick<MensajeChat, "id" | "rol" | "mensaje">;
   /** Si es true, el texto se revela como si el agente lo estuviera escribiendo. */
   animar?: boolean;
+  /** Si viene (chat de un cliente puntual, no el de negocio), se ofrece enviar este mensaje por WhatsApp. */
+  clienteId?: string | null;
 }) {
   const esUsuario = mensaje.rol === "user";
   const texto = mensaje.mensaje;
@@ -59,10 +63,21 @@ export function BurbujaMensaje({
       <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15">
         <Sparkles className="size-3.5 text-primary" />
       </div>
-      <div className="max-w-[85%] pt-1 text-[15px] leading-relaxed whitespace-pre-wrap text-[#E5E5E5]">
-        {textoVisible}
-        {escribiendo && (
-          <span className="ml-0.5 inline-block h-[15px] w-[2px] translate-y-[2px] animate-pulse bg-primary" />
+      <div className="max-w-[85%] pt-1">
+        <div className="text-[15px] leading-relaxed whitespace-pre-wrap text-[#E5E5E5]">
+          {textoVisible}
+          {escribiendo && (
+            <span className="ml-0.5 inline-block h-[15px] w-[2px] translate-y-[2px] animate-pulse bg-primary" />
+          )}
+        </div>
+        {clienteId && !escribiendo && (
+          <Link
+            href={`/whatsapp?cliente=${clienteId}&mensaje=${encodeURIComponent(texto)}`}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#25D366] bg-[#25D366]/10 px-3 py-1.5 text-[12px] font-semibold text-[#25D366] transition-colors hover:bg-[#25D366]/20"
+          >
+            <MessageCircle className="size-3.5" />
+            Enviar por WhatsApp
+          </Link>
         )}
       </div>
     </div>

@@ -20,8 +20,13 @@ Reglas estrictas:
 - Nunca inventes precios, fechas, productos ni datos que no estén explícitamente en el contexto que te paso.
 - Si te preguntan algo de catálogo, garantías u objeciones y no está en la información del negocio que te paso, dilo honestamente en vez de inventar.
 - Responde en español, de forma directa y breve — esto es un chat, no un informe.
-- Cuando te pidan redactar un mensaje para un cliente, responde SOLO con el mensaje listo para copiar y pegar. No agregues una sección explicando por qué funciona, ni lista de razones, ni termines preguntando "¿te gusta así?" o "¿le cambio algo?" — si Edwin quiere ajustes o una explicación, te los va a pedir en el siguiente mensaje.
-- Además de tu "respuesta" (lo que ve Edwin en el chat), completa "mensaje_para_cliente": si tu respuesta ES o INCLUYE un mensaje listo para copiar y enviarle al cliente por WhatsApp, poné ahí SOLO ese mensaje tal cual debe enviarse (sin nada de tu comentario alrededor). Si tu respuesta es una pregunta a Edwin, un análisis, una estrategia, un saludo, o cualquier cosa que no sea un mensaje literal para el cliente, poné null.`;
+
+REGLAS DE OUTPUT:
+- Cuando generes un mensaje para enviar a un cliente, entrega ÚNICAMENTE el mensaje. Sin explicaciones, sin análisis, sin comentarios al final.
+- Si necesitas aclarar algo, hazlo ANTES del mensaje, nunca después.
+- Formato: el mensaje listo para copiar y pegar. Nada más.
+
+Además de tu "respuesta" (lo que ve Edwin en el chat), completa "mensaje_para_cliente": si tu respuesta ES o INCLUYE un mensaje listo para copiar y enviarle al cliente por WhatsApp, poné ahí SOLO ese mensaje tal cual debe enviarse (sin nada de tu comentario alrededor). Si tu respuesta es una pregunta a Edwin, un análisis, una estrategia, un saludo, o cualquier cosa que no sea un mensaje literal para el cliente, poné null.`;
 
 const RespuestaChatSchema = z.object({
   respuesta: z.string().describe("La respuesta completa que ve Edwin en el chat."),

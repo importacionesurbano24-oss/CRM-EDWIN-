@@ -3,8 +3,6 @@ import {
   Package,
   Tag,
   ShieldCheck,
-  Route,
-  MessagesSquare,
   CircleHelp,
   Volume2,
   type LucideIcon,
@@ -35,16 +33,6 @@ export const SECCION_META: Record<
     placeholder: "10 años contra hundimiento en colchones ortopédicos...",
     icon: ShieldCheck,
   },
-  proceso_venta: {
-    label: "Proceso de venta",
-    placeholder: "Primero preguntar tipo de cama, luego mostrar catálogo...",
-    icon: Route,
-  },
-  objeciones: {
-    label: "Objeciones frecuentes",
-    placeholder: "\"Está muy caro\" → ..., \"Lo voy a pensar\" → ...",
-    icon: MessagesSquare,
-  },
   preguntas_frecuentes: {
     label: "Preguntas frecuentes",
     placeholder: "¿Hacen domicilios? ¿Reciben el colchón viejo?",
@@ -62,8 +50,6 @@ export const ORDEN_SECCIONES: SeccionConocimiento[] = [
   "catalogo",
   "promociones",
   "garantias",
-  "proceso_venta",
-  "objeciones",
   "preguntas_frecuentes",
   "tono",
 ];

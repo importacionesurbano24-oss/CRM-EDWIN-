@@ -2,11 +2,9 @@ import { z } from "zod";
 
 export const SECCIONES = [
   "catalogo",
-  "objeciones",
   "preguntas_frecuentes",
   "garantias",
   "tono",
-  "proceso_venta",
   "promociones",
   "datos_empresa",
 ] as const;

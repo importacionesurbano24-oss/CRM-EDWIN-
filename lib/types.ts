@@ -25,11 +25,9 @@ export type DireccionMensaje = "entrante" | "saliente";
 
 export type SeccionConocimiento =
   | "catalogo"
-  | "objeciones"
   | "preguntas_frecuentes"
   | "garantias"
   | "tono"
-  | "proceso_venta"
   | "promociones"
   | "datos_empresa";
 

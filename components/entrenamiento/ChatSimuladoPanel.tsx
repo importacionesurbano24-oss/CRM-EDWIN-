@@ -104,7 +104,12 @@ export function ChatSimuladoPanel({
             <BurbujaMensaje
               key={m.id}
               mensaje={m}
-              clienteId={clienteId}
+              // clienteId siempre null acá (a propósito, distinto del
+              // clienteId real que arma el contexto): BurbujaMensaje solo
+              // muestra "Enviar por WhatsApp" cuando hay clienteId, y una
+              // respuesta de esta prueba nunca debe poder mandarse a un
+              // cliente real de un clic.
+              clienteId={null}
               mensajeParaCliente={m.mensajeParaCliente}
             />
           ))

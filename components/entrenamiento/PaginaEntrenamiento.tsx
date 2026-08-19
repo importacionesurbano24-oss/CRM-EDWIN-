@@ -10,13 +10,18 @@ import type { ModoModelo } from "./SelectorModoModelo";
 
 export function PaginaEntrenamiento({
   promptActivoInicial,
+  systemPromptBase,
   clientes,
 }: {
   promptActivoInicial: AgentConfig | null;
+  /** SYSTEM_PROMPT_BASE real de producción (lib/claude/chat.ts) — punto de
+   * partida del editor cuando todavía no hay ningún prompt guardado como
+   * activo en agent_config. */
+  systemPromptBase: string;
   clientes: { id: string; nombre: string }[];
 }) {
   const [systemPrompt, setSystemPrompt] = useState(
-    promptActivoInicial?.system_prompt ?? ""
+    promptActivoInicial?.system_prompt ?? systemPromptBase
   );
   const [modoModelo, setModoModelo] = useState<ModoModelo>(
     promptActivoInicial?.nivel_ia ?? "basico"

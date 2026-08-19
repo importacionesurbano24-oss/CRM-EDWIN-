@@ -9,7 +9,10 @@ import { MODELOS_IA, decidirNivelIA, type NivelIA } from "@/lib/claude/modelos";
 // Prompt base compartido por los dos chats (cliente y negocio). Cada
 // llamada le agrega su propio bloque de contexto (ver
 // lib/services/chatContexto.service.ts) más el contenido de info_negocio.
-const SYSTEM_PROMPT_BASE = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Hablas con Edwin, el vendedor y dueño del negocio, por chat.
+// Exportado (además de usarse acá) para que /entrenamiento pueda mostrarlo
+// como punto de partida cuando todavía no hay ningún prompt guardado en
+// agent_config — nunca se escribe de vuelta acá, solo se lee.
+export const SYSTEM_PROMPT_BASE = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Hablas con Edwin, el vendedor y dueño del negocio, por chat.
 
 Tono: cercano, tuteando, sin tecnicismos ni lenguaje corporativo — como hablaría un vendedor de confianza.
 

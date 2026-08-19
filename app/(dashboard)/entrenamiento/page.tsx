@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getClientesConEtapa } from "@/lib/data/clientes";
 import { actionCargarPromptActivo } from "@/app/actions/entrenamiento.actions";
+import { SYSTEM_PROMPT_BASE } from "@/lib/claude/chat";
 import { PaginaEntrenamiento } from "@/components/entrenamiento/PaginaEntrenamiento";
 
 export default async function EntrenamientoPage() {
@@ -31,6 +32,7 @@ export default async function EntrenamientoPage() {
 
       <PaginaEntrenamiento
         promptActivoInicial={promptActivo.data ?? null}
+        systemPromptBase={SYSTEM_PROMPT_BASE}
         clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre }))}
       />
     </div>

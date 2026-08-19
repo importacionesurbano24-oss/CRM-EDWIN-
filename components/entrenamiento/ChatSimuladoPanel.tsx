@@ -88,7 +88,7 @@ export function ChatSimuladoPanel({
           variant="outline"
           size="sm"
           onClick={onLimpiar}
-          disabled={mensajes.length === 0}
+          disabled={mensajes.length === 0 || pending}
         >
           Limpiar conversación
         </Button>

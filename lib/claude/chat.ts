@@ -47,6 +47,11 @@ export interface RespuestaChat {
   texto: string;
   /** Mensaje listo para enviar al cliente por WhatsApp, o null si esta respuesta no es un mensaje para el cliente. */
   mensajeParaCliente: string | null;
+  /** Modelo real usado en esta llamada (ej. "claude-haiku-4-5"). Lo usa el panel de debug de /entrenamiento. */
+  modeloUsado: string;
+  nivelResuelto: NivelIA;
+  tokensEntrada: number;
+  tokensSalida: number;
 }
 
 let cachedClient: Anthropic | null = null;
@@ -66,10 +71,14 @@ export async function responderChat(
   historial: MensajeConversacion[],
   contextoEspecifico: string,
   fragmentos: FragmentoConocimiento[],
-  nivel?: NivelIA
+  nivel?: NivelIA,
+  /** Solo para /entrenamiento — permite probar un system prompt distinto al
+   * de producción sin tocar la constante. Si no viene, el comportamiento es
+   * idéntico al de siempre. */
+  opciones?: { systemPromptOverride?: string }
 ): Promise<RespuestaChat> {
   const system = [
-    SYSTEM_PROMPT_BASE,
+    opciones?.systemPromptOverride ?? SYSTEM_PROMPT_BASE,
     "",
     contextoEspecifico,
     ...(fragmentos.length
@@ -101,5 +110,9 @@ export async function responderChat(
   return {
     texto: response.parsed_output.respuesta,
     mensajeParaCliente: response.parsed_output.mensaje_para_cliente,
+    modeloUsado: MODELOS_IA[nivelResuelto],
+    nivelResuelto,
+    tokensEntrada: response.usage.input_tokens,
+    tokensSalida: response.usage.output_tokens,
   };
 }

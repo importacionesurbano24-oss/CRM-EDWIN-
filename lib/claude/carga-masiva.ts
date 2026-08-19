@@ -9,7 +9,15 @@ export type ContenidoArchivo =
   | { tipo: "imagen"; mediaType: "image/jpeg" | "image/png" | "image/webp"; base64: string }
   | { tipo: "texto"; texto: string };
 
-const SYSTEM_PROMPT = `Eres el asistente que ayuda a Edwin a actualizar el catálogo de productos de Dormiluna (colchones, bases cama, almohadas) a partir de un archivo que sube (PDF, Excel convertido a texto, foto de una lista de precios, o texto plano).
+// ── El system prompt se marca con cache_control ───────────────────────────
+// Anthropic cachea bloques marcados con { type: "ephemeral" }.
+// 1ra llamada: se paga normal y se almacena en caché (TTL: 5 min, se renueva con cada uso).
+// Siguientes llamadas: el system prompt cuesta ~10% de su precio original.
+// Requisito mínimo: 1024 tokens para Haiku, 2048 para Sonnet.
+const SYSTEM_PROMPT_BLOCKS: Anthropic.TextBlockParam[] = [
+  {
+    type: "text",
+    text: `Eres el asistente que ayuda a Edwin a actualizar el catálogo de productos de Dormiluna (colchones, bases cama, almohadas) a partir de un archivo que sube (PDF, Excel convertido a texto, foto de una lista de precios, o texto plano).
 
 Se te da el catálogo actual (texto libre) y el contenido del archivo nuevo, más una instrucción de Edwin sobre qué hacer.
 
@@ -18,7 +26,10 @@ Tu trabajo:
 2. Aplicar la instrucción de Edwin contra el catálogo actual: si dice "agrega productos nuevos", conserva todo lo que ya había y suma lo nuevo; si dice "actualiza precios", reemplaza el precio de los productos que coincidan por nombre y deja el resto igual; si la instrucción no es clara sobre qué hacer con lo que no está en el archivo, conserva el catálogo actual y solo agrega/actualiza lo que el archivo sí menciona.
 3. Devolver el catálogo COMPLETO y final como texto plano, en el mismo estilo de lista simple que ya se usa (nombre — precio — descripción corta, uno por línea o párrafo), nunca como JSON ni tabla markdown.
 4. Nunca inventes precios, productos o descripciones que no estén en el archivo o en el catálogo actual.
-5. Redacta un resumen corto y concreto de los cambios, en español, como lo diría un vendedor — ejemplo: "Encontré 12 productos: 3 son nuevos (Colchón X, Base Y, Almohada Z), 9 actualizan el precio."`;
+5. Redacta un resumen corto y concreto de los cambios, en español, como lo diría un vendedor — ejemplo: "Encontré 12 productos: 3 son nuevos (Colchón X, Base Y, Almohada Z), 9 actualizan el precio."`,
+    cache_control: { type: "ephemeral" },
+  },
+];
 
 const AnalisisCatalogoSchema = z.object({
   catalogo_actualizado: z.string().describe("Catálogo completo final, texto plano, listo para guardar."),
@@ -46,14 +57,14 @@ export async function analizarCargaMasiva(params: {
   const bloqueArchivo: Anthropic.ContentBlockParam =
     archivo.tipo === "pdf"
       ? {
-          type: "document",
-          source: { type: "base64", media_type: "application/pdf", data: archivo.base64 },
-        }
+        type: "document",
+        source: { type: "base64", media_type: "application/pdf", data: archivo.base64 },
+      }
       : archivo.tipo === "imagen"
         ? {
-            type: "image",
-            source: { type: "base64", media_type: archivo.mediaType, data: archivo.base64 },
-          }
+          type: "image",
+          source: { type: "base64", media_type: archivo.mediaType, data: archivo.base64 },
+        }
         : { type: "text", text: archivo.texto };
 
   const mensajeUsuario = [
@@ -64,26 +75,46 @@ export async function analizarCargaMasiva(params: {
     "Archivo adjunto:",
   ].join("\n");
 
-  const response = await getClient().messages.parse({
-    model: MODELOS_IA[nivel],
-    max_tokens: 8192,
-    thinking: { type: "disabled" },
-    output_config: {
-      // El parámetro "effort" no existe en Haiku 4.5 — solo se manda con el modelo avanzado (Sonnet).
-      ...(nivel === "avanzado" && { effort: "medium" as const }),
-      format: zodOutputFormat(AnalisisCatalogoSchema),
-    },
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [{ type: "text", text: mensajeUsuario }, bloqueArchivo],
+  // ── Activar prompt caching en el header ──────────────────────────────────
+  // Sin este header, Anthropic ignora el cache_control aunque esté en el body.
+  const response = await getClient().messages.parse(
+    {
+      model: MODELOS_IA[nivel],
+      max_tokens: 8192,
+      thinking: { type: "disabled" },
+      output_config: {
+        ...(nivel === "avanzado" && { effort: "medium" as const }),
+        format: zodOutputFormat(AnalisisCatalogoSchema),
       },
-    ],
-  });
+      system: SYSTEM_PROMPT_BLOCKS,
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "text", text: mensajeUsuario }, bloqueArchivo],
+        },
+      ],
+    },
+    {
+      headers: {
+        "anthropic-beta": "prompt-caching-2024-07-31",
+      },
+    }
+  );
 
   if (!response.parsed_output) {
     throw new Error("El agente no devolvió un análisis válido.");
   }
+
+  // ── Log de uso de caché (solo en desarrollo) ─────────────────────────────
+  if (process.env.NODE_ENV === "development") {
+    const uso = (response as any).usage;
+    console.log("[carga-masiva] tokens:", {
+      input: uso?.input_tokens,
+      output: uso?.output_tokens,
+      cache_creado: uso?.cache_creation_input_tokens,
+      cache_leido: uso?.cache_read_input_tokens,
+    });
+  }
+
   return response.parsed_output;
 }

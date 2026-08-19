@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, BarChart3, ListChecks, GraduationCap, MessageCircle } from "lucide-react";
+import {
+  LayoutGrid,
+  Users,
+  BarChart3,
+  ListChecks,
+  GraduationCap,
+  MessageCircle,
+  FlaskConical,
+} from "lucide-react";
 
 // Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
@@ -14,7 +22,8 @@ const NAV_ITEMS = [
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
-  { href: "/conocimiento", label: "Entrenamiento", icon: GraduationCap },
+  { href: "/conocimiento", label: "Conocimiento", icon: GraduationCap },
+  { href: "/entrenamiento", label: "Entrenamiento", icon: FlaskConical },
 ];
 
 export function SidebarNav() {

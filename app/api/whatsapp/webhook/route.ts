@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getUserIdPropietario } from "@/lib/whatsapp/propietario";
 import { mismoTelefono } from "@/lib/whatsapp/telefono";
 import { NOTA_LEAD_AUTOMATICO_WHATSAPP } from "@/lib/whatsapp/constantes";
+import { descargarAudioWhatsapp } from "@/lib/whatsapp/media";
+import { transcribirAudio } from "@/lib/groq/transcribir";
 
 // Única API route de lógica de negocio permitida por CLAUDE.md: Meta solo
 // puede llamar a una URL HTTP, no a un Server Action.
@@ -14,6 +16,7 @@ interface MensajeMeta {
   timestamp: string;
   type: string;
   text?: { body: string };
+  audio?: { id: string; mime_type: string };
 }
 
 interface CambioMeta {
@@ -48,8 +51,15 @@ function verificarFirma(cuerpoTexto: string, firmaHeader: string | null): boolea
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function textoDelMensaje(mensaje: MensajeMeta): string {
+async function resolverContenidoMensaje(mensaje: MensajeMeta): Promise<string> {
   if (mensaje.type === "text" && mensaje.text) return mensaje.text.body;
+
+  if (mensaje.type === "audio" && mensaje.audio) {
+    const audio = await descargarAudioWhatsapp(mensaje.audio.id);
+    const texto = audio ? await transcribirAudio(audio.buffer, audio.mimeType) : null;
+    return texto ? `🎤 ${texto}` : "[Nota de voz — no se pudo transcribir]";
+  }
+
   return `[mensaje de tipo "${mensaje.type}", no soportado todavía]`;
 }
 
@@ -90,7 +100,7 @@ export async function POST(request: Request) {
           user_id: userId,
           cliente_id: clienteId,
           direccion: "entrante",
-          contenido: textoDelMensaje(mensaje),
+          contenido: await resolverContenidoMensaje(mensaje),
           whatsapp_message_id: mensaje.id,
         });
 

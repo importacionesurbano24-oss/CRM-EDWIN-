@@ -59,7 +59,11 @@ export function EditorPromptPanel({
         useRag,
       });
       if (result.data) {
-        toast.success("Prompt guardado como activo.");
+        toast.success(
+          modoModelo === "auto"
+            ? "Prompt guardado como activo (modo Automático se guarda como Básico)."
+            : "Prompt guardado como activo."
+        );
       } else {
         toast.error(result.error);
       }

@@ -5,10 +5,17 @@ import { PaginaEntrenamiento } from "@/components/entrenamiento/PaginaEntrenamie
 
 export default async function EntrenamientoPage() {
   const supabase = await createClient();
+  // actionCargarPromptActivo (en vez de una función de lib/data) reutiliza
+  // la misma Server Action que ya usa el botón "Cargar prompt actual" de
+  // EditorPromptPanel, para no duplicar la consulta a agent_config.
   const [clientes, promptActivo] = await Promise.all([
     getClientesConEtapa(supabase),
     actionCargarPromptActivo(),
   ]);
+
+  if (promptActivo.error) {
+    console.error("EntrenamientoPage — actionCargarPromptActivo:", promptActivo.error);
+  }
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-9 md:py-8">

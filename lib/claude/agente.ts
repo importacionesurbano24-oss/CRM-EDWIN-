@@ -14,7 +14,7 @@ import type {
 import { ETAPA_META } from "@/lib/ui/etapa";
 import { formatMoneda } from "@/lib/ui/cotizacion";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
-import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
+import { MODELOS_IA, decidirNivelIA, type NivelIA } from "@/lib/claude/modelos";
 
 // Prompt del sistema como constante (no como variable de entorno), según CLAUDE.md.
 const SYSTEM_PROMPT = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones en Colombia. Ayudas a Edwin, el vendedor, a decidir qué hacer a continuación con un cliente o prospecto, a partir de su historial de seguimiento, cotizaciones y pedidos.
@@ -62,19 +62,22 @@ function getClient(): Anthropic {
 
 export async function sugerirProximaAccion(
   contexto: ContextoCliente,
-  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
+  nivel?: NivelIA
 ): Promise<Sugerencia> {
+  const mensajeUsuario = formatearContexto(contexto);
+  const nivelResuelto = nivel ?? decidirNivelIA(mensajeUsuario);
+
   const response = await getClient().messages.parse({
-    model: MODELOS_IA[nivel],
+    model: MODELOS_IA[nivelResuelto],
     max_tokens: 1024,
     thinking: { type: "disabled" },
     output_config: {
       // El parámetro "effort" no existe en Haiku 4.5 — solo se manda con el modelo avanzado (Sonnet).
-      ...(nivel === "avanzado" && { effort: "low" as const }),
+      ...(nivelResuelto === "avanzado" && { effort: "low" as const }),
       format: zodOutputFormat(SugerenciaSchema),
     },
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: formatearContexto(contexto) }],
+    messages: [{ role: "user", content: mensajeUsuario }],
   });
 
   if (!response.parsed_output) {

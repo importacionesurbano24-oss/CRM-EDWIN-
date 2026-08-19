@@ -6,7 +6,7 @@ import type { MensajeWhatsapp } from "@/lib/types";
 import { formatearContexto, type ContextoCliente } from "@/lib/claude/agente";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
-import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
+import { MODELOS_IA, decidirNivelIA, type NivelIA } from "@/lib/claude/modelos";
 
 // Mismo criterio que lib/claude/chat.ts y lib/claude/agente.ts: prompt
 // como constante (no variable de entorno), claude-sonnet-5,
@@ -31,7 +31,7 @@ export async function sugerirRespuestaWhatsapp(
   contextoCliente: ContextoCliente,
   hilo: Pick<MensajeWhatsapp, "direccion" | "contenido" | "created_at">[],
   fragmentos: FragmentoConocimiento[] = [],
-  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
+  nivel?: NivelIA
 ): Promise<string> {
   const contextoTexto = formatearContexto(contextoCliente);
 
@@ -57,8 +57,10 @@ export async function sugerirRespuestaWhatsapp(
     "Redacta la respuesta que Edwin debería mandar ahora.",
   ].join("\n");
 
+  const nivelResuelto = nivel ?? decidirNivelIA(mensajeUsuario);
+
   const response = await getClient().messages.create({
-    model: MODELOS_IA[nivel],
+    model: MODELOS_IA[nivelResuelto],
     max_tokens: 512,
     thinking: { type: "disabled" },
     system: SYSTEM_PROMPT,

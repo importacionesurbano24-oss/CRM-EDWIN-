@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { FragmentoConocimiento } from "@/lib/services/conocimiento.service";
 import { METODOLOGIA_VENTAS } from "@/lib/claude/metodologiaVentas";
-import { MODELOS_IA, NIVEL_IA_POR_DEFECTO, type NivelIA } from "@/lib/claude/modelos";
+import { MODELOS_IA, decidirNivelIA, type NivelIA } from "@/lib/claude/modelos";
 
 // Prompt base compartido por los dos chats (cliente y negocio). Cada
 // llamada le agrega su propio bloque de contexto (ver
@@ -66,7 +66,7 @@ export async function responderChat(
   historial: MensajeConversacion[],
   contextoEspecifico: string,
   fragmentos: FragmentoConocimiento[],
-  nivel: NivelIA = NIVEL_IA_POR_DEFECTO
+  nivel?: NivelIA
 ): Promise<RespuestaChat> {
   const system = [
     SYSTEM_PROMPT_BASE,
@@ -81,8 +81,12 @@ export async function responderChat(
       : []),
   ].join("\n");
 
+  // Solo el último turno — no toda la conversación — para decidir el nivel.
+  const ultimoMensaje = historial[historial.length - 1]?.mensaje ?? "";
+  const nivelResuelto = nivel ?? decidirNivelIA(ultimoMensaje);
+
   const response = await getClient().messages.parse({
-    model: MODELOS_IA[nivel],
+    model: MODELOS_IA[nivelResuelto],
     max_tokens: 1024,
     thinking: { type: "disabled" },
     output_config: { format: zodOutputFormat(RespuestaChatSchema) },

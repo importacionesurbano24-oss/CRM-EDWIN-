@@ -22,6 +22,7 @@ export type EstadoCotizacion = "enviada" | "vista" | "aceptada" | "vencida";
 export type RolChat = "user" | "assistant";
 
 export type DireccionMensaje = "entrante" | "saliente";
+export type NivelIaConfig = "basico" | "avanzado";
 
 export type SeccionConocimiento =
   | "catalogo"
@@ -347,6 +348,39 @@ export interface Database {
         };
         Relationships: [];
       };
+      agent_config: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          system_prompt: string;
+          nivel_ia: NivelIaConfig;
+          use_rag: boolean;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          system_prompt: string;
+          nivel_ia?: NivelIaConfig;
+          use_rag?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          system_prompt?: string;
+          nivel_ia?: NivelIaConfig;
+          use_rag?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       clientes_con_etapa: {
@@ -396,3 +430,4 @@ export type MensajeWhatsapp =
   Database["public"]["Tables"]["mensajes_whatsapp"]["Row"];
 export type ConocimientoNegocio =
   Database["public"]["Tables"]["conocimiento_negocio"]["Row"];
+export type AgentConfig = Database["public"]["Tables"]["agent_config"]["Row"];

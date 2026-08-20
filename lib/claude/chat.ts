@@ -9,7 +9,10 @@ import { MODELOS_IA, decidirNivelIA, type NivelIA } from "@/lib/claude/modelos";
 // Prompt base compartido por los dos chats (cliente y negocio). Cada
 // llamada le agrega su propio bloque de contexto (ver
 // lib/services/chatContexto.service.ts) más el contenido de info_negocio.
-const SYSTEM_PROMPT_BASE = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Hablas con Edwin, el vendedor y dueño del negocio, por chat.
+// Exportado (además de usarse acá) para que /entrenamiento pueda mostrarlo
+// como punto de partida cuando todavía no hay ningún prompt guardado en
+// agent_config — nunca se escribe de vuelta acá, solo se lee.
+export const SYSTEM_PROMPT_BASE = `Eres el asistente de ventas de PasoCRM para Dormiluna, una tienda de colchones, bases cama y almohadas en Colombia. Hablas con Edwin, el vendedor y dueño del negocio, por chat.
 
 Tono: cercano, tuteando, sin tecnicismos ni lenguaje corporativo — como hablaría un vendedor de confianza.
 
@@ -47,6 +50,11 @@ export interface RespuestaChat {
   texto: string;
   /** Mensaje listo para enviar al cliente por WhatsApp, o null si esta respuesta no es un mensaje para el cliente. */
   mensajeParaCliente: string | null;
+  /** Modelo real usado en esta llamada (ej. "claude-haiku-4-5"). Lo usa el panel de debug de /entrenamiento. */
+  modeloUsado: string;
+  nivelResuelto: NivelIA;
+  tokensEntrada: number;
+  tokensSalida: number;
 }
 
 let cachedClient: Anthropic | null = null;
@@ -66,10 +74,14 @@ export async function responderChat(
   historial: MensajeConversacion[],
   contextoEspecifico: string,
   fragmentos: FragmentoConocimiento[],
-  nivel?: NivelIA
+  nivel?: NivelIA,
+  /** Solo para /entrenamiento — permite probar un system prompt distinto al
+   * de producción sin tocar la constante. Si no viene, el comportamiento es
+   * idéntico al de siempre. */
+  opciones?: { systemPromptOverride?: string }
 ): Promise<RespuestaChat> {
   const system = [
-    SYSTEM_PROMPT_BASE,
+    opciones?.systemPromptOverride ?? SYSTEM_PROMPT_BASE,
     "",
     contextoEspecifico,
     ...(fragmentos.length
@@ -101,5 +113,9 @@ export async function responderChat(
   return {
     texto: response.parsed_output.respuesta,
     mensajeParaCliente: response.parsed_output.mensaje_para_cliente,
+    modeloUsado: MODELOS_IA[nivelResuelto],
+    nivelResuelto,
+    tokensEntrada: response.usage.input_tokens,
+    tokensSalida: response.usage.output_tokens,
   };
 }

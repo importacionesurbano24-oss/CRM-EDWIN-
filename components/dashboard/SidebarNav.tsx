@@ -2,19 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Users, BarChart3, ListChecks, GraduationCap, MessageCircle } from "lucide-react";
+import {
+  LayoutGrid,
+  Users,
+  BarChart3,
+  ListChecks,
+  MessageCircle,
+  FlaskConical,
+} from "lucide-react";
 
 // Los módulos de Cotizaciones y Pedidos siguen existiendo (/cotizaciones,
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
 // del cliente (incluida la compra) desde "Registrar seguimiento" en
 // /clientes/[id]. No se borró el código ni los datos.
+// Conocimiento y Entrenamiento se unieron en /agente (pestañas dentro de
+// la misma pantalla) — un solo ítem de nav para las dos.
 const NAV_ITEMS = [
   { href: "/inicio", label: "Inicio", icon: LayoutGrid },
   { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
-  { href: "/conocimiento", label: "Entrenamiento", icon: GraduationCap },
+  { href: "/agente", label: "Agente IA", icon: FlaskConical },
 ];
 
 export function SidebarNav() {

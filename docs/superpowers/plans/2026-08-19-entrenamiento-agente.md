@@ -31,14 +31,14 @@ El repo ya usa `git worktree` para features grandes (ver `.worktrees/rediseno-co
 (`lib/claude/chat.ts`, `lib/claude/modelos.ts`, `lib/types.ts`, el sidebar, y el
 heading de `/conocimiento`), así que conviene aislarla igual.
 
-- [ ] **Paso 1: Crear el worktree**
+- [x] **Paso 1: Crear el worktree**
 
 ```bash
 cd "c:/Users/Urban/Desktop/CRM EDWIN"
 git worktree add .worktrees/entrenamiento -b feature/entrenamiento
 ```
 
-- [ ] **Paso 2: Instalar dependencias en el worktree**
+- [x] **Paso 2: Instalar dependencias en el worktree**
 
 ```bash
 cd "c:/Users/Urban/Desktop/CRM EDWIN/.worktrees/entrenamiento"
@@ -106,12 +106,14 @@ del mismo modo). Pega el contenido de `0008_agent_config.sql` en el SQL Editor d
 Supabase (proyecto real, el mismo de `.env.local`) y ejecútalo. Confirma en el
 Table Editor que `agent_config` existe con RLS activado.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add supabase/migrations/0008_agent_config.sql
 git commit -m "feat: agrega tabla agent_config para /entrenamiento"
 ```
+
+**Estado: DONE — commit `6f76dff`. Spec review ✅. Code quality review ✅ (sin issues críticos ni importantes).**
 
 ---
 
@@ -230,12 +232,14 @@ pnpm exec tsc --noEmit
 Expected: sin errores nuevos relacionados a `lib/types.ts` (el archivo compila solo
 con tipos, no hay lógica que probar todavía).
 
-- [ ] **Paso 5: Commit**
+- [x] **Paso 5: Commit**
 
 ```bash
 git add lib/types.ts
 git commit -m "feat: agrega tipos de agent_config a lib/types.ts"
 ```
+
+**Estado: DONE — commit `0ca3185`. Spec review ✅. Code quality review ✅ (1 nit cosmético de orden, sin acción).**
 
 ---
 
@@ -366,12 +370,14 @@ primer patrón). No hace falta un test runner para esto; el refactor es mecánic
 (mismos regex, mismo orden de chequeos) y `tsc --noEmit` ya confirmó que los tipos
 cierran.
 
-- [ ] **Paso 4: Commit**
+- [x] **Paso 4: Commit**
 
 ```bash
 git add lib/claude/modelos.ts
 git commit -m "feat: agrega explicarNivelIA para el panel de debug de /entrenamiento"
 ```
+
+**Estado: DONE — commit `d0a9da0`. Spec review ✅ (regex byte-a-byte verificados). Code quality review ✅.**
 
 ---
 
@@ -483,12 +489,14 @@ Expected: sin errores. `chat.actions.ts` (el único caller real hoy) sigue funci
 porque los 4 campos nuevos son adicionales — nada que use `RespuestaChat` desestructura
 solo `{texto, mensajeParaCliente}` así que no se rompe.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add lib/claude/chat.ts
 git commit -m "feat: responderChat acepta override de prompt y devuelve métricas de uso"
 ```
+
+**Estado: DONE — commit `15f83dc`. Spec review ✅ (caller sin diff, `??` correcto). Code quality review ✅ (nits menores de doc, no bloqueantes).**
 
 ---
 
@@ -532,12 +540,14 @@ pnpm exec tsc --noEmit
 
 Expected: sin errores.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add lib/validators/entrenamiento.schema.ts
 git commit -m "feat: agrega schemas Zod para las Server Actions de /entrenamiento"
 ```
+
+**Estado: DONE — commit `4736ab4`. Spec review ✅. Code quality review ✅.**
 
 ---
 
@@ -755,12 +765,15 @@ Expected: sin errores. Si aparece un error sobre `supabase.from("agent_config")`
 reconocido, confirmar que Task 2 (tipos) se completó y que este archivo importa
 `AgentConfig` desde `@/lib/types` (no desde otro lado).
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add app/actions/entrenamiento.actions.ts
 git commit -m "feat: agrega Server Actions de /entrenamiento (sin guardar en chat_agente)"
 ```
+
+**Estado: DONE — commit `68bcef6`. Spec review ✅. Code quality review ✅ (ready to merge).**
+**Nota de seguimiento (no bloqueante):** el bloque de armado de contexto (cliente/negocio) quedó duplicado entre `chat.actions.ts` y este archivo — candidato a extraer a un helper compartido en `chatContexto.service.ts` en una limpieza futura, fuera de alcance de este plan.
 
 ---
 
@@ -850,12 +863,14 @@ Expected: sin errores. Si `Zap`, `Target` o `Wand2` no existen en `lucide-react`
 error lo dice explícitamente (`has no exported member`) — buscar el nombre correcto en
 `node_modules/lucide-react/dist/lucide-react.d.ts` y ajustar el import.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/SelectorModoModelo.tsx
 git commit -m "feat: agrega SelectorModoModelo (Haiku/Sonnet/Automático) para /entrenamiento"
 ```
+
+**Estado: DONE — commit `5a39497`. Spec ✅. Calidad ✅.**
 
 ---
 
@@ -906,12 +921,14 @@ pnpm exec tsc --noEmit
 
 Expected: sin errores.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/ToggleRAG.tsx
 git commit -m "feat: agrega ToggleRAG para /entrenamiento"
 ```
+
+**Estado: DONE — commit `caa6ca6`. Spec ✅. Calidad ✅.**
 
 ---
 
@@ -1015,12 +1032,14 @@ pnpm exec tsc --noEmit
 Expected: sin errores. Mismo comentario que Task 7 si algún ícono de `lucide-react` no
 existe con ese nombre exacto.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/PanelDebug.tsx
 git commit -m "feat: agrega PanelDebug (modelo, tokens, chunks RAG) para /entrenamiento"
 ```
+
+**Estado: DONE — commit `ce10f16`. Spec ✅. Calidad ✅ (nit menor: nombre de archivo exportado con `:` del ISO timestamp, el navegador lo sanea solo).**
 
 ---
 
@@ -1188,12 +1207,14 @@ pnpm exec tsc --noEmit
 
 Expected: sin errores.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/EditorPromptPanel.tsx
 git commit -m "feat: agrega EditorPromptPanel para /entrenamiento"
 ```
+
+**Estado: DONE — commit `cc4dcb1` + fix `21d4bc4`. Spec ✅. Code quality review encontró 1 issue "Important" (downgrade silencioso de Automático→Básico al guardar) — corregido con un toast que lo avisa.**
 
 ---
 
@@ -1340,12 +1361,14 @@ pnpm exec tsc --noEmit
 Expected: sin errores. `BurbujaMensaje` espera `Pick<MensajeChat, "id"|"rol"|"mensaje">`
 — `MensajeLocal` cumple esa forma estructuralmente, no hace falta convertir nada.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/ChatSimuladoPanel.tsx
 git commit -m "feat: agrega ChatSimuladoPanel (no persiste en chat_agente) para /entrenamiento"
 ```
+
+**Estado: DONE — commit `d66c2d4` + fix `6b36b34`. Spec ✅. Code quality review encontró una condición de carrera real (Limpiar durante una respuesta pendiente resucitaba la conversación) — corregida deshabilitando el botón mientras `pending`.**
 
 ---
 
@@ -1435,12 +1458,14 @@ pnpm exec tsc --noEmit
 
 Expected: sin errores.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add components/entrenamiento/PaginaEntrenamiento.tsx
 git commit -m "feat: agrega PaginaEntrenamiento (layout de 3 columnas) para /entrenamiento"
 ```
+
+**Estado: DONE — commit `8d8b564`. Spec ✅. Code quality review ✅ (sin issues bloqueantes; confirma que los fixes previos de ChatSimuladoPanel siguen vigentes).**
 
 ---
 
@@ -1493,12 +1518,14 @@ pnpm exec tsc --noEmit
 
 Expected: sin errores.
 
-- [ ] **Paso 3: Commit**
+- [x] **Paso 3: Commit**
 
 ```bash
 git add "app/(dashboard)/entrenamiento/page.tsx"
 git commit -m "feat: agrega la ruta /entrenamiento"
 ```
+
+**Estado: DONE — commit `cb9a0cd` + fix `667b073`. Spec ✅. Code quality review ✅ (2 nits menores aplicados: comentario aclarando el uso de la Server Action + console.error si falla la carga inicial).**
 
 ---
 
@@ -1597,12 +1624,14 @@ nombre válido equivalente (ej. `TestTube`) en
 `node_modules/lucide-react/dist/lucide-react.d.ts` y ajustar tanto el import de
 `SidebarNav.tsx` como el de `ChatSimuladoPanel.tsx` (Task 11) para que coincidan.
 
-- [ ] **Paso 4: Commit**
+- [x] **Paso 4: Commit**
 
 ```bash
 git add components/dashboard/SidebarNav.tsx "app/(dashboard)/conocimiento/page.tsx"
 git commit -m "fix: renombra el nav de /conocimiento a \"Conocimiento\" y agrega \"Entrenamiento\""
 ```
+
+**Estado: DONE — commit `ad9b5ad`. Spec ✅. Calidad ✅.**
 
 ---
 
@@ -1610,7 +1639,7 @@ git commit -m "fix: renombra el nav de /conocimiento a \"Conocimiento\" y agrega
 
 **Files:** ninguno (solo verificación)
 
-- [ ] **Paso 1: Build completo**
+- [x] **Paso 1: Build completo**
 
 ```bash
 pnpm build
@@ -1618,7 +1647,9 @@ pnpm build
 
 Expected: build exitoso, sin errores de tipos ni de lint bloqueantes.
 
-- [ ] **Paso 2: Lint**
+**Resultado: ✅ `pnpm build` exitoso. `/entrenamiento` aparece en la lista de rutas (`ƒ /entrenamiento`, server-rendered). El error de `LayoutProps` que aparecía en `tsc --noEmit` NO bloquea el build real de Next (es un artefacto de `tsc --noEmit` corrido fuera del pipeline de build, preexistente y no relacionado a este plan).**
+
+- [x] **Paso 2: Lint**
 
 ```bash
 pnpm lint
@@ -1626,6 +1657,15 @@ pnpm lint
 
 Expected: sin errores nuevos (pueden existir warnings preexistentes en el resto del
 repo — solo revisar que no haya nada nuevo en los archivos tocados por este plan).
+
+**Resultado: ⚠️ 2 problemas preexistentes en archivos NO tocados por este plan (`lib/claude/carga-masiva.ts:110` un `any`, `lib/services/reportes.service.ts:19` un import sin usar) — confirmados preexistentes en `main` antes de este branch. Se corrió `eslint` apuntado solo a los 15 archivos que este plan creó/modificó: ✅ 0 errores, 0 warnings.**
+
+**Revisión final integral del branch completo (main...feature/entrenamiento):** encontró 2 issues "Important" que ninguna revisión por tarea individual podía detectar:
+1. `ChatSimuladoPanel` le pasaba el `clienteId` real a `BurbujaMensaje`, activando el botón "Enviar por WhatsApp" — una respuesta de un prompt sin revisar quedaba a un clic de mandarse a un cliente real. **Corregido** (commit `a23c52d`): siempre se le pasa `clienteId={null}` a `BurbujaMensaje` en el chat simulado.
+2. El editor arrancaba con el textarea vacío hasta guardar manualmente — sin forma de partir del prompt real de producción. **Corregido** (mismo commit): se exporta `SYSTEM_PROMPT_BASE` (solo lectura, cero cambio de comportamiento en producción) y se usa como valor inicial cuando no hay ningún prompt guardado.
+Ambos fixes re-verificados: `tsc --noEmit` y `eslint` limpios, `chat.actions.ts` (producción) sin diff, build exitoso.
+
+- [x] **Paso 1 (smoke test automatizado, no reemplaza la prueba manual del Paso 3):** `pnpm build` + `pnpm dev` en el worktree (con `.env.local` copiado desde el checkout principal), confirmado que `/entrenamiento` y `/conocimiento` responden `307` → `/login` sin sesión (sin crashear el servidor) y `/login` responde `200`.
 
 - [ ] **Paso 3: Prueba manual en el navegador**
 

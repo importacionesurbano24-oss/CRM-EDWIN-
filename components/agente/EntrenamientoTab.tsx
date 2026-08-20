@@ -4,7 +4,7 @@ import { useRef, useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Globe, Mic, Square, X } from "lucide-react";
+import { ArrowUp, Globe, Mic, Square, X } from "lucide-react";
 import {
   actionEnviarMensajeEntrenamiento,
   actionGuardarPromptActivo,
@@ -73,12 +73,14 @@ export function EntrenamientoTab({
   const [pendingTranscripcion, setPendingTranscripcion] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksAudioRef = useRef<Blob[]>([]);
+  // onstop se define una sola vez, al arrancar la grabación — este ref le
+  // dice qué hacer al parar, según qué botón se haya apretado (cancelar,
+  // detener y revisar, o detener y mandar directo).
+  const accionAlDetenerRef = useRef<"cancelar" | "transcribir" | "transcribir-enviar">(
+    "transcribir"
+  );
 
-  async function alternarGrabacion() {
-    if (grabando) {
-      mediaRecorderRef.current?.stop();
-      return;
-    }
+  async function empezarGrabacion() {
     if (!navigator.mediaDevices?.getUserMedia) {
       toast.error("Este navegador no puede grabar audio.");
       return;
@@ -92,10 +94,16 @@ export function EntrenamientoTab({
       };
       recorder.onstop = () => {
         stream.getTracks().forEach((track) => track.stop());
+        setGrabando(false);
+
+        if (accionAlDetenerRef.current === "cancelar") {
+          chunksAudioRef.current = [];
+          return;
+        }
         const blob = new Blob(chunksAudioRef.current, {
           type: recorder.mimeType || "audio/webm",
         });
-        transcribirGrabacion(blob);
+        transcribirGrabacion(blob, accionAlDetenerRef.current === "transcribir-enviar");
       };
       recorder.start();
       mediaRecorderRef.current = recorder;
@@ -105,8 +113,12 @@ export function EntrenamientoTab({
     }
   }
 
-  async function transcribirGrabacion(blob: Blob) {
-    setGrabando(false);
+  function detenerGrabacion(accion: "cancelar" | "transcribir" | "transcribir-enviar") {
+    accionAlDetenerRef.current = accion;
+    mediaRecorderRef.current?.stop();
+  }
+
+  async function transcribirGrabacion(blob: Blob, autoEnviar: boolean) {
     setPendingTranscripcion(true);
     try {
       const formData = new FormData();
@@ -118,8 +130,13 @@ export function EntrenamientoTab({
         toast.error(result.error ?? "No se pudo transcribir el audio.");
         return;
       }
-      const textoTranscrito = result.data.texto;
-      setValor((prev) => (prev.trim() ? `${prev} ${textoTranscrito}` : `🎤 ${textoTranscrito}`));
+      const texto = result.data.texto;
+      const textoTranscrito = `🎤 ${texto}`;
+      if (autoEnviar) {
+        enviarMensaje(textoTranscrito);
+      } else {
+        setValor((prev) => (prev.trim() ? `${prev} ${texto}` : textoTranscrito));
+      }
     } catch (error) {
       if (esAccionDesactualizada(error)) {
         toast.info("Se actualizó la app — recargando...");
@@ -233,9 +250,12 @@ export function EntrenamientoTab({
     setMensajes([]);
   }
 
-  async function enviar(event: FormEvent) {
+  function enviar(event: FormEvent) {
     event.preventDefault();
-    const mensaje = valor.trim();
+    enviarMensaje(valor.trim());
+  }
+
+  async function enviarMensaje(mensaje: string) {
     if (!mensaje || pendingChat) return;
 
     const historialPrevio: MensajeConversacion[] = mensajes.map((m) => ({
@@ -580,64 +600,105 @@ export function EntrenamientoTab({
           )}
         </div>
 
-        <form
-          onSubmit={enviar}
-          className="flex items-end gap-2.5 px-4.5 py-3.5"
-          style={{ borderTop: `1px solid ${BORDE}` }}
-        >
-          <textarea
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                enviar(e);
-              }
-            }}
-            placeholder={
-              pendingTranscripcion
-                ? "Transcribiendo audio..."
-                : "Escribe como si fueras un cliente..."
-            }
-            disabled={pendingChat || grabando || pendingTranscripcion}
-            rows={2}
-            className="flex-1 resize-none rounded-[10px] outline-none disabled:opacity-50"
-            style={{
-              background: "#191919",
-              color: TEXTO,
-              border: `1px solid ${BORDE}`,
-              padding: "10px 14px",
-              fontSize: "13.5px",
-              lineHeight: "1.5",
-            }}
-          />
-          <button
-            type="button"
-            onClick={alternarGrabacion}
-            disabled={pendingChat || pendingTranscripcion}
-            title={grabando ? "Detener grabación" : "Grabar una nota de voz"}
-            className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] transition-colors disabled:opacity-40"
-            style={
-              grabando
-                ? { background: "#E5484D", color: "#fff" }
-                : { background: "#1C1C1C", border: `1px solid ${BORDE}`, color: TEXTO_MUTED }
-            }
+        {grabando ? (
+          <div
+            className="flex items-center gap-3 px-4.5 py-3.5"
+            style={{ borderTop: `1px solid ${BORDE}` }}
           >
-            {grabando ? (
+            <button
+              type="button"
+              onClick={() => detenerGrabacion("cancelar")}
+              title="Cancelar grabación"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full"
+              style={{ background: "#2A2A2A", color: TEXTO_MUTED }}
+            >
+              <X className="size-4" />
+            </button>
+
+            <div className="flex h-9 flex-1 items-center gap-[3px] overflow-hidden rounded-full px-3" style={{ background: "#1A1A1A" }}>
+              {Array.from({ length: 32 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="w-[3px] shrink-0 rounded-full animate-[wave-bar_1s_ease-in-out_infinite]"
+                  style={{
+                    background: TEXTO_MUTED,
+                    animationDelay: `${(i % 8) * 0.09}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => detenerGrabacion("transcribir")}
+              title="Detener y revisar antes de mandar"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full"
+              style={{ background: "#2A2A2A", color: TEXTO }}
+            >
               <Square className="size-3.5 fill-current" />
-            ) : (
-              <Mic className="size-4" />
-            )}
-          </button>
-          <button
-            type="submit"
-            disabled={pendingChat || grabando || pendingTranscripcion || !valor.trim()}
-            className="shrink-0 rounded-[10px] px-4.5 py-2.5 text-[13px] font-bold disabled:opacity-40"
-            style={{ background: ORO, color: "#0B0B0B" }}
+            </button>
+            <button
+              type="button"
+              onClick={() => detenerGrabacion("transcribir-enviar")}
+              title="Detener y mandar directo"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full"
+              style={{ background: ORO, color: "#0B0B0B" }}
+            >
+              <ArrowUp className="size-4" />
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={enviar}
+            className="flex items-end gap-2.5 px-4.5 py-3.5"
+            style={{ borderTop: `1px solid ${BORDE}` }}
           >
-            Enviar
-          </button>
-        </form>
+            <textarea
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  enviar(e);
+                }
+              }}
+              placeholder={
+                pendingTranscripcion
+                  ? "Transcribiendo audio..."
+                  : "Escribe como si fueras un cliente..."
+              }
+              disabled={pendingChat || pendingTranscripcion}
+              rows={2}
+              className="flex-1 resize-none rounded-[10px] outline-none disabled:opacity-50"
+              style={{
+                background: "#191919",
+                color: TEXTO,
+                border: `1px solid ${BORDE}`,
+                padding: "10px 14px",
+                fontSize: "13.5px",
+                lineHeight: "1.5",
+              }}
+            />
+            <button
+              type="button"
+              onClick={empezarGrabacion}
+              disabled={pendingChat || pendingTranscripcion}
+              title="Grabar una nota de voz"
+              className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] transition-colors disabled:opacity-40"
+              style={{ background: "#1C1C1C", border: `1px solid ${BORDE}`, color: TEXTO_MUTED }}
+            >
+              <Mic className="size-4" />
+            </button>
+            <button
+              type="submit"
+              disabled={pendingChat || pendingTranscripcion || !valor.trim()}
+              className="shrink-0 rounded-[10px] px-4.5 py-2.5 text-[13px] font-bold disabled:opacity-40"
+              style={{ background: ORO, color: "#0B0B0B" }}
+            >
+              Enviar
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

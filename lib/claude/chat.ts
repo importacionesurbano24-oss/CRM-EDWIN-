@@ -64,6 +64,25 @@ function getClient(): Anthropic {
 }
 
 /**
+ * El SDK a veces tira "Failed to parse structured output as JSON:
+ * Unexpected end of JSON input" con output_config.format —  ya se vio
+ * antes en actionAnalizarCargaMasiva (carga-masiva.ts), no es nuevo de
+ * este archivo. Un reintento resuelve la gran mayoría de los casos; si
+ * el segundo también falla, se deja que el error suba (mensaje real de
+ * fondo, no una falla transitoria).
+ */
+async function parseConReintento<T>(
+  llamar: () => Promise<T>
+): Promise<T> {
+  try {
+    return await llamar();
+  } catch (error) {
+    console.error("responderChat — falló el primer intento, reintentando:", error);
+    return await llamar();
+  }
+}
+
+/**
  * Responde un turno de chat. `contextoEspecifico` es el bloque de cliente o
  * de negocio ya armado (lib/services/chatContexto.service.ts); `fragmentos`
  * son las secciones de conocimiento más relevantes al mensaje del usuario
@@ -97,18 +116,20 @@ export async function responderChat(
   const ultimoMensaje = historial[historial.length - 1]?.mensaje ?? "";
   const nivelResuelto = nivel ?? decidirNivelIA(ultimoMensaje);
 
-  const response = await getClient().messages.parse({
-    model: MODELOS_IA[nivelResuelto],
-    // 1024 se quedaba corto y el JSON estructurado salía cortado a mitad
-    // (RespuestaChatSchema no cerraba y el parseo tiraba "Unexpected end
-    // of JSON input") con prompts largos como el de /agente que incluyen
-    // toda METODOLOGIA_VENTAS.
-    max_tokens: 2048,
-    thinking: { type: "disabled" },
-    output_config: { format: zodOutputFormat(RespuestaChatSchema) },
-    system,
-    messages: historial.map((m) => ({ role: m.rol, content: m.mensaje })),
-  });
+  const response = await parseConReintento(() =>
+    getClient().messages.parse({
+      model: MODELOS_IA[nivelResuelto],
+      // 1024 se quedaba corto y el JSON estructurado salía cortado a mitad
+      // (RespuestaChatSchema no cerraba y el parseo tiraba "Unexpected end
+      // of JSON input") con prompts largos como el de /agente que incluyen
+      // toda METODOLOGIA_VENTAS.
+      max_tokens: 2048,
+      thinking: { type: "disabled" },
+      output_config: { format: zodOutputFormat(RespuestaChatSchema) },
+      system,
+      messages: historial.map((m) => ({ role: m.rol, content: m.mensaje })),
+    })
+  );
 
   if (!response.parsed_output) {
     throw new Error("El agente no devolvió una respuesta válida.");

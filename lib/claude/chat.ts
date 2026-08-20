@@ -99,7 +99,11 @@ export async function responderChat(
 
   const response = await getClient().messages.parse({
     model: MODELOS_IA[nivelResuelto],
-    max_tokens: 1024,
+    // 1024 se quedaba corto y el JSON estructurado salía cortado a mitad
+    // (RespuestaChatSchema no cerraba y el parseo tiraba "Unexpected end
+    // of JSON input") con prompts largos como el de /agente que incluyen
+    // toda METODOLOGIA_VENTAS.
+    max_tokens: 2048,
     thinking: { type: "disabled" },
     output_config: { format: zodOutputFormat(RespuestaChatSchema) },
     system,

@@ -181,7 +181,7 @@ export function EntrenamientoTab({
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
             rows={16}
-            className="min-h-[420px] resize-none border-border bg-[#0A0A0A] font-mono text-[13px] leading-relaxed text-[#DDD]"
+            className="min-h-[420px] resize-none rounded-lg border-border border-l-[3px] border-l-primary bg-[#0A0A0A] font-mono text-[13px] leading-relaxed text-[#DDD]"
           />
           <span className="absolute right-3 bottom-3 text-[11px] text-[#555]">
             {systemPrompt.length.toLocaleString("es-CO")} caracteres

@@ -4,10 +4,12 @@ import { useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Globe, X } from "lucide-react";
 import {
   actionEnviarMensajeEntrenamiento,
   actionGuardarPromptActivo,
   actionCargarPromptActivo,
+  actionLeerUrlEntrenamiento,
 } from "@/app/actions/entrenamiento.actions";
 import type { MensajeConversacion } from "@/lib/claude/chat";
 import type { AgentConfig } from "@/lib/types";
@@ -60,6 +62,38 @@ export function EntrenamientoTab({
   const [pendingChat, setPendingChat] = useState(false);
   const [guardado, setGuardado] = useState(false);
   const [pendingGuardar, startTransition] = useTransition();
+  const [urlInput, setUrlInput] = useState("");
+  const [urlCargada, setUrlCargada] = useState<{ url: string; contenido: string } | null>(
+    null
+  );
+  const [pendingUrl, setPendingUrl] = useState(false);
+
+  async function cargarUrl() {
+    const url = urlInput.trim();
+    if (!url || pendingUrl) return;
+    setPendingUrl(true);
+    const result = await actionLeerUrlEntrenamiento(url);
+    setPendingUrl(false);
+
+    if (result.error || !result.data) {
+      toast.error(result.error ?? "No se pudo leer la URL.");
+      return;
+    }
+    if (result.data.contenido.startsWith("[")) {
+      // leerContenidoUrl devuelve un mensaje entre corchetes cuando no
+      // pudo leer la página (link roto, no es HTML, etc.) — se muestra
+      // igual como aviso en vez de cargarlo como si fuera contenido real.
+      toast.warning(result.data.contenido);
+      return;
+    }
+    setUrlCargada(result.data);
+    toast.success("Página cargada — el agente ya puede usarla como referencia.");
+  }
+
+  function quitarUrl() {
+    setUrlCargada(null);
+    setUrlInput("");
+  }
 
   function guardar() {
     setGuardado(false);
@@ -126,7 +160,15 @@ export function EntrenamientoTab({
     setPendingChat(true);
 
     const result = await actionEnviarMensajeEntrenamiento(
-      { clienteId, mensaje, systemPrompt, modoModelo, useRag },
+      {
+        clienteId,
+        mensaje,
+        systemPrompt,
+        modoModelo,
+        useRag,
+        urlReferencia: urlCargada?.url ?? null,
+        contenidoUrlReferencia: urlCargada?.contenido ?? null,
+      },
       historialPrevio
     );
     setPendingChat(false);
@@ -189,6 +231,56 @@ export function EntrenamientoTab({
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          {urlCargada ? (
+            <div
+              className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px]"
+              style={{
+                background: "rgba(170,223,0,0.07)",
+                border: "1px solid rgba(170,223,0,0.2)",
+                color: LIMA,
+              }}
+            >
+              <Globe className="size-3 shrink-0" />
+              <span className="flex-1 truncate">{urlCargada.url}</span>
+              <button
+                type="button"
+                onClick={quitarUrl}
+                title="Quitar esta página de referencia"
+                className="shrink-0 opacity-70 hover:opacity-100"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    cargarUrl();
+                  }
+                }}
+                placeholder="URL de referencia (opcional) — ej. la ficha de un producto"
+                disabled={pendingUrl}
+                className="h-auto min-w-0 flex-1 rounded-lg px-3 py-1.5 text-[11px] outline-none disabled:opacity-50"
+                style={{ background: "#141414", border: `1px solid ${BORDE}`, color: TEXTO }}
+              />
+              <button
+                type="button"
+                onClick={cargarUrl}
+                disabled={pendingUrl || !urlInput.trim()}
+                className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold disabled:opacity-40"
+                style={{ background: "#1C1C1C", border: `1px solid ${BORDE}`, color: TEXTO_MUTED }}
+              >
+                {pendingUrl ? "Leyendo..." : "Cargar página"}
+              </button>
+            </div>
+          )}
         </div>
 
         <textarea

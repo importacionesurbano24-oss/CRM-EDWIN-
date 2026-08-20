@@ -20,9 +20,11 @@ import {
   construirContextoNegocio,
 } from "@/lib/services/chatContexto.service";
 import { explicarNivelIA, type NivelIA } from "@/lib/claude/modelos";
+import { leerContenidoUrl } from "@/lib/utils/leer-url";
 import {
   EnviarMensajeEntrenamientoSchema,
   GuardarPromptActivoSchema,
+  LeerUrlEntrenamientoSchema,
   type EnviarMensajeEntrenamientoInput,
   type GuardarPromptActivoInput,
 } from "@/lib/validators/entrenamiento.schema";
@@ -54,7 +56,15 @@ export async function actionEnviarMensajeEntrenamiento(
   if (!parsed.success) {
     return { data: null, error: parsed.error.issues[0].message };
   }
-  const { clienteId, mensaje, systemPrompt, modoModelo, useRag } = parsed.data;
+  const {
+    clienteId,
+    mensaje,
+    systemPrompt,
+    modoModelo,
+    useRag,
+    urlReferencia,
+    contenidoUrlReferencia,
+  } = parsed.data;
 
   const supabase = await createClient();
 
@@ -90,6 +100,13 @@ export async function actionEnviarMensajeEntrenamiento(
       getPedidosReporte(supabase),
     ]);
     contextoEspecifico = construirContextoNegocio(clientes, pedidosReporte);
+  }
+
+  // Mismo patrón que la cotización externa en agente.ts: el texto ya
+  // viene leído (actionLeerUrlEntrenamiento), acá solo se agrega al
+  // contexto — no se relee la URL en cada mensaje de la conversación.
+  if (urlReferencia && contenidoUrlReferencia) {
+    contextoEspecifico += `\n\nContenido de referencia (${urlReferencia}):\n${contenidoUrlReferencia}`;
   }
 
   const historialCompleto: MensajeConversacion[] = [
@@ -191,4 +208,24 @@ export async function actionCargarPromptActivo(): Promise<
   }
 
   return { data, error: null };
+}
+
+/**
+ * Lee una URL de referencia (ej. la ficha de un producto, una página de
+ * la competencia) para que el sandbox de /agente se la pueda pasar al
+ * agente como contexto. Reutiliza leerContenidoUrl (lib/utils/leer-url),
+ * la misma función que ya usa agente.ts para cotizaciones externas — no
+ * duplica la lógica de descarga/extracción de texto.
+ */
+export async function actionLeerUrlEntrenamiento(
+  url: string
+): Promise<ActionResult<{ url: string; contenido: string }>> {
+  const parsed = LeerUrlEntrenamientoSchema.safeParse({ url });
+  if (!parsed.success) {
+    return { data: null, error: parsed.error.issues[0].message };
+  }
+
+  const contenido = await leerContenidoUrl(parsed.data.url);
+
+  return { data: { url: parsed.data.url, contenido }, error: null };
 }

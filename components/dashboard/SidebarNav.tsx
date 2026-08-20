@@ -7,7 +7,6 @@ import {
   Users,
   BarChart3,
   ListChecks,
-  GraduationCap,
   MessageCircle,
   FlaskConical,
 } from "lucide-react";
@@ -16,14 +15,15 @@ import {
 // /pedidos) pero se ocultaron del menú: Edwin maneja todo el seguimiento
 // del cliente (incluida la compra) desde "Registrar seguimiento" en
 // /clientes/[id]. No se borró el código ni los datos.
+// Conocimiento y Entrenamiento se unieron en /agente (pestañas dentro de
+// la misma pantalla) — un solo ítem de nav para las dos.
 const NAV_ITEMS = [
   { href: "/inicio", label: "Inicio", icon: LayoutGrid },
   { href: "/tareas", label: "Tareas", icon: ListChecks },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
-  { href: "/conocimiento", label: "Conocimiento", icon: GraduationCap },
-  { href: "/entrenamiento", label: "Entrenamiento", icon: FlaskConical },
+  { href: "/agente", label: "Agente IA", icon: FlaskConical },
 ];
 
 export function SidebarNav() {

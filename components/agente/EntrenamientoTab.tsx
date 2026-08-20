@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { SelectorModoModelo, type ModoModelo } from "@/components/entrenamiento/SelectorModoModelo";
 import { ToggleRAG } from "@/components/entrenamiento/ToggleRAG";
+import { esAccionDesactualizada, recargarPorAccionVieja } from "@/lib/utils/accion-servidor";
 import {
   AGENTE_ORO as ORO,
   AGENTE_LIMA as LIMA,
@@ -72,22 +73,32 @@ export function EntrenamientoTab({
     const url = urlInput.trim();
     if (!url || pendingUrl) return;
     setPendingUrl(true);
-    const result = await actionLeerUrlEntrenamiento(url);
-    setPendingUrl(false);
+    try {
+      const result = await actionLeerUrlEntrenamiento(url);
+      setPendingUrl(false);
 
-    if (result.error || !result.data) {
-      toast.error(result.error ?? "No se pudo leer la URL.");
-      return;
+      if (result.error || !result.data) {
+        toast.error(result.error ?? "No se pudo leer la URL.");
+        return;
+      }
+      if (result.data.contenido.startsWith("[")) {
+        // leerContenidoUrl devuelve un mensaje entre corchetes cuando no
+        // pudo leer la página (link roto, no es HTML, etc.) — se muestra
+        // igual como aviso en vez de cargarlo como si fuera contenido real.
+        toast.warning(result.data.contenido);
+        return;
+      }
+      setUrlCargada(result.data);
+      toast.success("Página cargada — el agente ya puede usarla como referencia.");
+    } catch (error) {
+      if (esAccionDesactualizada(error)) {
+        toast.info("Se actualizó la app — recargando...");
+        recargarPorAccionVieja();
+        return;
+      }
+      setPendingUrl(false);
+      toast.error("No se pudo leer la URL.");
     }
-    if (result.data.contenido.startsWith("[")) {
-      // leerContenidoUrl devuelve un mensaje entre corchetes cuando no
-      // pudo leer la página (link roto, no es HTML, etc.) — se muestra
-      // igual como aviso en vez de cargarlo como si fuera contenido real.
-      toast.warning(result.data.contenido);
-      return;
-    }
-    setUrlCargada(result.data);
-    toast.success("Página cargada — el agente ya puede usarla como referencia.");
   }
 
   function quitarUrl() {
@@ -98,42 +109,61 @@ export function EntrenamientoTab({
   function guardar() {
     setGuardado(false);
     startTransition(async () => {
-      // La tabla solo admite 'basico'/'avanzado' — en modo "Automático" se
-      // guarda como 'basico' (el modo automático en sí no es persistible,
-      // es una elección de esta pantalla, no del prompt guardado).
-      const nivelIa = modoModelo === "auto" ? "basico" : modoModelo;
-      const nombre = `Prueba ${format(new Date(), "d MMM yyyy, HH:mm", { locale: es })}`;
-      const result = await actionGuardarPromptActivo({
-        name: nombre,
-        systemPrompt,
-        nivelIa,
-        useRag,
-      });
-      if (result.data) {
-        setGuardado(true);
-        setTimeout(() => setGuardado(false), 5000);
-      } else {
-        toast.error(result.error);
+      try {
+        // La tabla solo admite 'basico'/'avanzado' — en modo "Automático"
+        // se guarda como 'basico' (el modo automático en sí no es
+        // persistible, es una elección de esta pantalla, no del prompt
+        // guardado).
+        const nivelIa = modoModelo === "auto" ? "basico" : modoModelo;
+        const nombre = `Prueba ${format(new Date(), "d MMM yyyy, HH:mm", { locale: es })}`;
+        const result = await actionGuardarPromptActivo({
+          name: nombre,
+          systemPrompt,
+          nivelIa,
+          useRag,
+        });
+        if (result.data) {
+          setGuardado(true);
+          setTimeout(() => setGuardado(false), 5000);
+        } else {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        if (esAccionDesactualizada(error)) {
+          toast.info("Se actualizó la app — recargando...");
+          recargarPorAccionVieja();
+          return;
+        }
+        toast.error("No se pudo guardar el prompt.");
       }
     });
   }
 
   function cargarActivo() {
     startTransition(async () => {
-      const result = await actionCargarPromptActivo();
-      if (result.error) {
-        toast.error(result.error);
-        return;
+      try {
+        const result = await actionCargarPromptActivo();
+        if (result.error) {
+          toast.error(result.error);
+          return;
+        }
+        if (!result.data) {
+          toast.info("Todavía no hay ningún prompt guardado — mostrando el del código.");
+          setSystemPrompt(systemPromptBase);
+          return;
+        }
+        setSystemPrompt(result.data.system_prompt);
+        setModoModelo(result.data.nivel_ia);
+        setUseRag(result.data.use_rag);
+        toast.success("Prompt cargado.");
+      } catch (error) {
+        if (esAccionDesactualizada(error)) {
+          toast.info("Se actualizó la app — recargando...");
+          recargarPorAccionVieja();
+          return;
+        }
+        toast.error("No se pudo cargar el prompt.");
       }
-      if (!result.data) {
-        toast.info("Todavía no hay ningún prompt guardado — mostrando el del código.");
-        setSystemPrompt(systemPromptBase);
-        return;
-      }
-      setSystemPrompt(result.data.system_prompt);
-      setModoModelo(result.data.nivel_ia);
-      setUseRag(result.data.use_rag);
-      toast.success("Prompt cargado.");
     });
   }
 
@@ -159,29 +189,39 @@ export function EntrenamientoTab({
     setValor("");
     setPendingChat(true);
 
-    const result = await actionEnviarMensajeEntrenamiento(
-      {
-        clienteId,
-        mensaje,
-        systemPrompt,
-        modoModelo,
-        useRag,
-        urlReferencia: urlCargada?.url ?? null,
-        contenidoUrlReferencia: urlCargada?.contenido ?? null,
-      },
-      historialPrevio
-    );
-    setPendingChat(false);
+    try {
+      const result = await actionEnviarMensajeEntrenamiento(
+        {
+          clienteId,
+          mensaje,
+          systemPrompt,
+          modoModelo,
+          useRag,
+          urlReferencia: urlCargada?.url ?? null,
+          contenidoUrlReferencia: urlCargada?.contenido ?? null,
+        },
+        historialPrevio
+      );
+      setPendingChat(false);
 
-    if (result.error || !result.data) {
-      toast.error(result.error ?? "No se pudo generar la respuesta.");
-      return;
+      if (result.error || !result.data) {
+        toast.error(result.error ?? "No se pudo generar la respuesta.");
+        return;
+      }
+
+      setMensajes([
+        ...mensajesConUsuario,
+        { id: `local-${Date.now()}-r`, rol: "assistant", mensaje: result.data.texto },
+      ]);
+    } catch (error) {
+      if (esAccionDesactualizada(error)) {
+        toast.info("Se actualizó la app — recargando...");
+        recargarPorAccionVieja();
+        return;
+      }
+      setPendingChat(false);
+      toast.error("No se pudo generar la respuesta.");
     }
-
-    setMensajes([
-      ...mensajesConUsuario,
-      { id: `local-${Date.now()}-r`, rol: "assistant", mensaje: result.data.texto },
-    ]);
   }
 
   return (

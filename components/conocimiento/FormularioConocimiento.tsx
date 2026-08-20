@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { CargaMasivaCatalogo } from "@/components/conocimiento/CargaMasivaCatalogo";
+import { esAccionDesactualizada, recargarPorAccionVieja } from "@/lib/utils/accion-servidor";
 
 export function FormularioConocimiento({
   filas,
@@ -59,49 +60,68 @@ function TarjetaSeccion({
     const url = urlSitio.trim();
     if (!url || pendingUrl) return;
     setPendingUrl(true);
-    const result = await actionLeerUrlConocimiento(url);
-    setPendingUrl(false);
+    try {
+      const result = await actionLeerUrlConocimiento(url);
+      setPendingUrl(false);
 
-    if (result.error || !result.data) {
-      toast.error(result.error ?? "No se pudo leer la página.");
-      return;
-    }
-    if (result.data.contenido.startsWith("[")) {
-      // leerContenidoUrl devuelve un mensaje entre corchetes cuando no
-      // pudo leer la página (link roto, no es HTML, etc.).
-      toast.warning(result.data.contenido);
-      return;
-    }
+      if (result.error || !result.data) {
+        toast.error(result.error ?? "No se pudo leer la página.");
+        return;
+      }
+      if (result.data.contenido.startsWith("[")) {
+        // leerContenidoUrl devuelve un mensaje entre corchetes cuando no
+        // pudo leer la página (link roto, no es HTML, etc.).
+        toast.warning(result.data.contenido);
+        return;
+      }
 
-    const contenidoLeido = result.data.contenido;
-    setContenido((prev) =>
-      prev.trim()
-        ? `${prev}\n\n[Contenido de ${url}]\n${contenidoLeido}`
-        : `[Contenido de ${url}]\n${contenidoLeido}`
-    );
-    setUrlSitio("");
-    toast.success("Página agregada abajo — revisala y dale Guardar para que quede.");
+      const contenidoLeido = result.data.contenido;
+      setContenido((prev) =>
+        prev.trim()
+          ? `${prev}\n\n[Contenido de ${url}]\n${contenidoLeido}`
+          : `[Contenido de ${url}]\n${contenidoLeido}`
+      );
+      setUrlSitio("");
+      toast.success("Página agregada abajo — revisala y dale Guardar para que quede.");
+    } catch (error) {
+      if (esAccionDesactualizada(error)) {
+        toast.info("Se actualizó la app — recargando...");
+        recargarPorAccionVieja();
+        return;
+      }
+      setPendingUrl(false);
+      toast.error("No se pudo leer la página.");
+    }
   }
 
   function guardar() {
     startTransition(async () => {
-      const formData = new FormData();
-      formData.set("seccion", seccion);
-      formData.set("contenido", contenido);
-      const result = await actionGuardarSeccionConocimiento(formData);
+      try {
+        const formData = new FormData();
+        formData.set("seccion", seccion);
+        formData.set("contenido", contenido);
+        const result = await actionGuardarSeccionConocimiento(formData);
 
-      if (!result.data) {
-        toast.error(result.error);
-        return;
-      }
+        if (!result.data) {
+          toast.error(result.error);
+          return;
+        }
 
-      setTieneEmbedding(result.data.embeddingGenerado);
-      if (result.data.embeddingGenerado) {
-        toast.success("Información guardada.");
-      } else {
-        toast.warning(
-          "Se guardó el texto, pero la búsqueda semántica no está activa (falta configurar VOYAGE_API_KEY)."
-        );
+        setTieneEmbedding(result.data.embeddingGenerado);
+        if (result.data.embeddingGenerado) {
+          toast.success("Información guardada.");
+        } else {
+          toast.warning(
+            "Se guardó el texto, pero la búsqueda semántica no está activa (falta configurar VOYAGE_API_KEY)."
+          );
+        }
+      } catch (error) {
+        if (esAccionDesactualizada(error)) {
+          toast.info("Se actualizó la app — recargando...");
+          recargarPorAccionVieja();
+          return;
+        }
+        toast.error("No se pudo guardar.");
       }
     });
   }

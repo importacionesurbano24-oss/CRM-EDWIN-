@@ -8,9 +8,11 @@ export const EnviarMensajeEntrenamientoSchema = z.object({
   useRag: z.boolean(),
   /** URL de referencia ya leída (ver actionLeerUrlEntrenamiento) — se
    * manda el texto ya extraído, no la URL sola, para no releerla en
-   * cada mensaje de la conversación. */
-  urlReferencia: z.string().nullable(),
-  contenidoUrlReferencia: z.string().nullable(),
+   * cada mensaje de la conversación. nullish (no solo nullable) para que
+   * un cliente con un bundle viejo, que todavía no manda estos campos,
+   * no rompa la validación — sin URL cargada es un caso válido. */
+  urlReferencia: z.string().nullish(),
+  contenidoUrlReferencia: z.string().nullish(),
 });
 
 export type EnviarMensajeEntrenamientoInput = z.infer<

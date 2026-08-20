@@ -4,7 +4,7 @@ import { getConocimientoNegocio } from "@/lib/data/conocimiento";
 import { getInfoNegocio } from "@/lib/data/chat";
 import { getClientesConEtapa } from "@/lib/data/clientes";
 import { actionCargarPromptActivo } from "@/app/actions/entrenamiento.actions";
-import { SYSTEM_PROMPT_BASE } from "@/lib/claude/chat";
+import { PROMPT_ENTRENAMIENTO_INICIAL } from "@/lib/claude/entrenamientoPrompt";
 import { FormularioConocimiento } from "@/components/conocimiento/FormularioConocimiento";
 import { EstadisticasConocimiento } from "@/components/conocimiento/EstadisticasConocimiento";
 import { ChatNegocio } from "@/components/dashboard/ChatNegocio";
@@ -115,7 +115,7 @@ export default async function AgentePage() {
         entrenamiento={
           <EntrenamientoTab
             promptActivoInicial={promptActivo.data ?? null}
-            systemPromptBase={SYSTEM_PROMPT_BASE}
+            systemPromptBase={PROMPT_ENTRENAMIENTO_INICIAL}
             clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre }))}
           />
         }

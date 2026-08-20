@@ -21,6 +21,7 @@ import {
 } from "@/lib/services/chatContexto.service";
 import { explicarNivelIA, type NivelIA } from "@/lib/claude/modelos";
 import { leerContenidoUrl } from "@/lib/utils/leer-url";
+import { transcribirAudio } from "@/lib/groq/transcribir";
 import {
   EnviarMensajeEntrenamientoSchema,
   GuardarPromptActivoSchema,
@@ -228,4 +229,32 @@ export async function actionLeerUrlEntrenamiento(
   const contenido = await leerContenidoUrl(parsed.data.url);
 
   return { data: { url: parsed.data.url, contenido }, error: null };
+}
+
+/**
+ * Transcribe una nota de voz grabada en el sandbox de /agente, para
+ * probar el prompt igual que si un cliente mandara audio por WhatsApp.
+ * Reutiliza transcribirAudio (lib/groq/transcribir), la misma función
+ * que ya usa el webhook real de WhatsApp — no duplica la llamada a Groq.
+ */
+export async function actionTranscribirAudioEntrenamiento(
+  formData: FormData
+): Promise<ActionResult<{ texto: string }>> {
+  const archivo = formData.get("audio");
+  if (!(archivo instanceof File) || archivo.size === 0) {
+    return { data: null, error: "No se recibió ningún audio." };
+  }
+
+  const buffer = Buffer.from(await archivo.arrayBuffer());
+  const texto = await transcribirAudio(buffer, archivo.type || "audio/webm");
+
+  if (!texto) {
+    return {
+      data: null,
+      error:
+        "No se pudo transcribir el audio — revisá que GROQ_API_KEY esté configurada.",
+    };
+  }
+
+  return { data: { texto }, error: null };
 }

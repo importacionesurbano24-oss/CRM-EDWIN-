@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useRef, useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Globe, X } from "lucide-react";
+import { Globe, Mic, Square, X } from "lucide-react";
 import {
   actionEnviarMensajeEntrenamiento,
   actionGuardarPromptActivo,
   actionCargarPromptActivo,
   actionLeerUrlEntrenamiento,
+  actionTranscribirAudioEntrenamiento,
 } from "@/app/actions/entrenamiento.actions";
 import type { MensajeConversacion } from "@/lib/claude/chat";
 import type { AgentConfig } from "@/lib/types";
@@ -68,6 +69,67 @@ export function EntrenamientoTab({
     null
   );
   const [pendingUrl, setPendingUrl] = useState(false);
+  const [grabando, setGrabando] = useState(false);
+  const [pendingTranscripcion, setPendingTranscripcion] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksAudioRef = useRef<Blob[]>([]);
+
+  async function alternarGrabacion() {
+    if (grabando) {
+      mediaRecorderRef.current?.stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("Este navegador no puede grabar audio.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksAudioRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksAudioRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksAudioRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        transcribirGrabacion(blob);
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setGrabando(true);
+    } catch {
+      toast.error("No se pudo acceder al micrófono — revisá los permisos del navegador.");
+    }
+  }
+
+  async function transcribirGrabacion(blob: Blob) {
+    setGrabando(false);
+    setPendingTranscripcion(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", blob, "grabacion.webm");
+      const result = await actionTranscribirAudioEntrenamiento(formData);
+      setPendingTranscripcion(false);
+
+      if (result.error || !result.data) {
+        toast.error(result.error ?? "No se pudo transcribir el audio.");
+        return;
+      }
+      const textoTranscrito = result.data.texto;
+      setValor((prev) => (prev.trim() ? `${prev} ${textoTranscrito}` : `🎤 ${textoTranscrito}`));
+    } catch (error) {
+      if (esAccionDesactualizada(error)) {
+        toast.info("Se actualizó la app — recargando...");
+        recargarPorAccionVieja();
+        return;
+      }
+      setPendingTranscripcion(false);
+      toast.error("No se pudo transcribir el audio.");
+    }
+  }
 
   async function cargarUrl() {
     const url = urlInput.trim();
@@ -532,8 +594,12 @@ export function EntrenamientoTab({
                 enviar(e);
               }
             }}
-            placeholder="Escribe como si fueras un cliente..."
-            disabled={pendingChat}
+            placeholder={
+              pendingTranscripcion
+                ? "Transcribiendo audio..."
+                : "Escribe como si fueras un cliente..."
+            }
+            disabled={pendingChat || grabando || pendingTranscripcion}
             rows={2}
             className="flex-1 resize-none rounded-[10px] outline-none disabled:opacity-50"
             style={{
@@ -546,8 +612,26 @@ export function EntrenamientoTab({
             }}
           />
           <button
+            type="button"
+            onClick={alternarGrabacion}
+            disabled={pendingChat || pendingTranscripcion}
+            title={grabando ? "Detener grabación" : "Grabar una nota de voz"}
+            className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] transition-colors disabled:opacity-40"
+            style={
+              grabando
+                ? { background: "#E5484D", color: "#fff" }
+                : { background: "#1C1C1C", border: `1px solid ${BORDE}`, color: TEXTO_MUTED }
+            }
+          >
+            {grabando ? (
+              <Square className="size-3.5 fill-current" />
+            ) : (
+              <Mic className="size-4" />
+            )}
+          </button>
+          <button
             type="submit"
-            disabled={pendingChat || !valor.trim()}
+            disabled={pendingChat || grabando || pendingTranscripcion || !valor.trim()}
             className="shrink-0 rounded-[10px] px-4.5 py-2.5 text-[13px] font-bold disabled:opacity-40"
             style={{ background: ORO, color: "#0B0B0B" }}
           >
